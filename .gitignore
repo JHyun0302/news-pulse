@@ -1,0 +1,35 @@
+# macOS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Local secrets
+.env
+.env.*
+!.env.example
+
+# Original assignment attachments and Office lock files.
+# The submission repository is public, so do not publish source documents
+# or raw provided workbooks unless explicitly re-reviewed.
+*.docx
+~$*
+*사전*과제*.xlsx
+*사용자*데이터*.xlsx
+
+# Local-only analysis derived from the confidential assignment material.
+new-pulse-docs/private/
+
+# Build outputs
+node_modules/
+dist/
+build/
+target/
+.gradle/
+
+# Local runtime DBs. CSV review artifacts can be placed under deliverables,
+# but SQLite snapshots require PM review before public commit.
+*.db
+*.sqlite
+*.sqlite3
+!new-pulse-backend/deliverables/
+!new-pulse-backend/deliverables/*.csv

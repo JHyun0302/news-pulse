@@ -1,7 +1,7 @@
 table_name,row_count
-articles,472
+articles,456
 article_categories,562
 users,100
 user_preferences,300
-push_histories,20814
-article_read_states,7
+push_histories,21617
+article_read_states,5

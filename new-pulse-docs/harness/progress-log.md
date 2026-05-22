@@ -655,3 +655,29 @@ Browser QA:
 - backend 결함 없음
 - frontend 결함 없음
 - 문서 결함 없음
+
+## 2026-05-23 원문 링크와 푸시 설계 설명 보강
+
+세션:
+
+- docs
+
+완료 작업:
+
+- 원문 새 탭 설계 이유를 `02-architecture.md`, `04-frontend-design.md`, 루트 `README.md`에 보강
+- RSS 앱은 기사 메타데이터와 읽음 상태를 관리하고, 본문 소비는 원 출처로 연결한다는 역할 경계 명시
+- 본문 crawler/저장 방식의 저작권, 출처 표기, 본문 최신성, 삭제/수정 반영, HTML sanitizing, 이미지/동영상 자산 처리 부담을 문서화
+- iframe이 언론사 CSP/X-Frame-Options 정책으로 차단될 수 있어 새 탭 방식이 실용적 선택임을 문서화
+- `03-backend-design.md`의 푸시 발송 섹션에 기사-사용자 카테고리 매칭, DND 제외, APNS/FCM 분기, `Random` 기반 success/fail, `push_histories` 저장, 중복 방지, `APNs` 정규화 흐름을 단계별로 보강
+- README에 평가자 관점의 “푸시 시뮬레이션 구현” 섹션 추가
+
+검증 결과:
+
+```bash
+git diff --check
+# 통과
+```
+
+- README 이미지 링크와 실제 파일 존재 확인 통과
+- `rg` 기준 제출 일정, 안내 원문, 개인정보성 상세 문구 노출 없음
+- 변경 파일은 README와 설계/진행 로그 문서로 한정

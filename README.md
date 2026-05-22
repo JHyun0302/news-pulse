@@ -163,6 +163,10 @@ Base path는 `/api`입니다.
 
 상세 계약은 [API Contract](new-pulse-docs/07-api-contract.md)를 기준으로 합니다.
 
+## 푸시 시뮬레이션 구현
+
+백엔드는 RSS 수집 기사와 사용자 선호 카테고리를 매칭한 뒤, DND 시간대에 포함되는 사용자를 제외합니다. 남은 대상은 `push_type`에 따라 APNS 또는 FCM 경로로 분기합니다. `PushNotificationService` 인터페이스 시그니처는 과제 요구와 동일하게 유지했고, 구현체는 실제 외부 연동 없이 `Random` 기반으로 `success` 또는 `fail`을 반환합니다. 반환값은 즉시 `push_histories`에 저장하며, `UNIQUE(user_no, article_id)` 제약과 service-level 확인으로 같은 사용자에게 같은 기사가 중복 발송되지 않게 했습니다. 원천 데이터의 `APNs` 입력은 importer에서 `APNS`로 정규화합니다.
+
 ## DB와 산출물
 
 SQLite schema는 [schema.sql](new-pulse-backend/src/main/resources/schema.sql)로 직접 초기화합니다.
@@ -290,6 +294,7 @@ docker build -f new-pulse-frontend/Dockerfile -t news-pulse-frontend:latest .
 - 제공 사용자 데이터는 웹 로그인 사용자가 아니라 푸시 발송 대상자 seed로만 사용합니다.
 - RSS `guid`는 사용하지 않고, link URL 마지막 path segment에서 `article_id`를 추출합니다.
 - 같은 기사가 여러 카테고리에 나타날 수 있어 기사와 카테고리 매핑을 분리했습니다.
+- 뉴스 열람 앱은 기사 메타데이터와 읽음 상태를 관리하고 본문 소비는 원 출처로 연결합니다. 본문 수집/저장은 저작권, 출처 표기, 최신성, 삭제/수정 반영, HTML sanitizing, 이미지/동영상 자산 처리 문제가 생기고, iframe은 언론사 CSP/X-Frame-Options 정책으로 막힐 수 있어 새 탭 방식을 선택했습니다.
 - DND 시간대에 해당하는 사용자는 해당 발송에서 제외합니다. 보류 큐는 과제 범위 밖으로 두었습니다.
 - APNS/FCM은 실제 외부 연동 없이 `success` 또는 `fail` 결과를 시뮬레이션하고 DB에 저장합니다.
 - 프론트엔드는 같은 origin `/api` 호출을 기본으로 하며, dev server와 Nginx proxy가 백엔드 연결을 담당합니다.

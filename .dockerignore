@@ -1,0 +1,35 @@
+# Git and local editor state
+.git/
+.idea/
+.vscode/
+.DS_Store
+
+# Local secrets and machine-specific env files
+.env
+.env.*
+!*.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Original assignment attachments and Office lock files must never enter images
+*.docx
+*.xlsx
+~$*
+
+# Local-only derived analysis
+new-pulse-docs/private/
+
+# Build and dependency outputs
+**/target/
+**/node_modules/
+**/dist/
+**/build/
+**/.gradle/
+
+# Runtime data and generated review artifacts
+**/data/
+**/*.db
+**/*.sqlite
+**/*.sqlite3
+new-pulse-backend/deliverables/

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>YNA politics fixture</title>
+    <item>
+      <title><![CDATA[정치 기사 첫 번째]]></title>
+      <link>https://www.yna.co.kr/view/AKR20260518104500055?section=politics</link>
+      <guid isPermaLink="true">https://www.yna.co.kr/view/AKR20260518104500055</guid>
+      <pubDate>Mon, 18 May 2026 14:42:49 +0900</pubDate>
+      <dc:creator>김기자</dc:creator>
+    </item>
+    <item>
+      <title>정치 기사 두 번째</title>
+      <link>https://www.yna.co.kr/view/AKR20260518104600055</link>
+      <guid isPermaLink="true">https://www.yna.co.kr/view/AKR20260518104600055</guid>
+      <pubDate>Mon, 18 May 2026 15:42:49 +0900</pubDate>
+      <dc:creator>이기자</dc:creator>
+    </item>
+  </channel>
+</rss>

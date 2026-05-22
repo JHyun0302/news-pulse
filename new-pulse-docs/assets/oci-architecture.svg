@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">News Pulse OCI architecture</title>
+  <desc id="desc">User traffic enters edge-vm, then front-vm, then back-vm. Back-vm stores SQLite data and collects RSS feeds.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f8fafc; }
+      .vcn { fill: #ffffff; stroke: #cbd5e1; stroke-width: 2; }
+      .box { fill: #ffffff; stroke: #334155; stroke-width: 2; rx: 14; }
+      .edge { fill: #eff6ff; stroke: #2563eb; }
+      .front { fill: #ecfdf5; stroke: #059669; }
+      .back { fill: #fff7ed; stroke: #ea580c; }
+      .data { fill: #fefce8; stroke: #ca8a04; }
+      .external { fill: #f1f5f9; stroke: #64748b; }
+      .title { font: 700 30px Arial, sans-serif; fill: #0f172a; }
+      .subtitle { font: 400 16px Arial, sans-serif; fill: #475569; }
+      .label { font: 700 20px Arial, sans-serif; fill: #0f172a; }
+      .text { font: 400 15px Arial, sans-serif; fill: #334155; }
+      .small { font: 400 13px Arial, sans-serif; fill: #475569; }
+      .arrow { stroke: #334155; stroke-width: 2.5; fill: none; marker-end: url(#arrowhead); }
+      .dashed { stroke-dasharray: 8 6; }
+      .badge { fill: #e2e8f0; }
+      .badgeText { font: 700 12px Arial, sans-serif; fill: #334155; }
+    </style>
+    <marker id="arrowhead" markerWidth="12" markerHeight="8" refX="11" refY="4" orient="auto">
+      <path d="M0,0 L12,4 L0,8 Z" fill="#334155" />
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1280" height="720" />
+  <text x="64" y="58" class="title">News Pulse OCI Deployment Architecture</text>
+  <text x="64" y="86" class="subtitle">edge-vm handles public ingress, front-vm serves the React app, back-vm runs Spring Boot and SQLite.</text>
+
+  <rect x="42" y="124" width="1196" height="520" rx="22" class="vcn" />
+  <text x="70" y="160" class="label">OCI VCN</text>
+  <text x="70" y="184" class="small">Only edge-vm is publicly reachable. front-vm and back-vm stay private.</text>
+
+  <rect x="82" y="274" width="170" height="120" class="box external" />
+  <text x="124" y="310" class="label">Browser</text>
+  <text x="111" y="337" class="text">User / Chrome QA</text>
+  <text x="126" y="362" class="small">HTTPS request</text>
+
+  <rect x="330" y="244" width="190" height="180" class="box edge" />
+  <rect x="358" y="266" width="75" height="24" rx="12" class="badge" />
+  <text x="373" y="283" class="badgeText">PUBLIC</text>
+  <text x="376" y="320" class="label">edge-vm</text>
+  <text x="365" y="350" class="text">TLS termination</text>
+  <text x="372" y="376" class="text">Reverse proxy</text>
+  <text x="383" y="402" class="small">80 / 443</text>
+
+  <rect x="600" y="244" width="210" height="180" class="box front" />
+  <rect x="630" y="266" width="78" height="24" rx="12" class="badge" />
+  <text x="644" y="283" class="badgeText">PRIVATE</text>
+  <text x="655" y="320" class="label">front-vm</text>
+  <text x="635" y="350" class="text">Nginx static app</text>
+  <text x="646" y="376" class="text">/api proxy</text>
+  <text x="662" y="402" class="small">port 80</text>
+
+  <rect x="890" y="244" width="220" height="180" class="box back" />
+  <rect x="922" y="266" width="78" height="24" rx="12" class="badge" />
+  <text x="936" y="283" class="badgeText">PRIVATE</text>
+  <text x="947" y="320" class="label">back-vm</text>
+  <text x="918" y="350" class="text">Spring Boot REST API</text>
+  <text x="938" y="376" class="text">RSS scheduler</text>
+  <text x="961" y="402" class="small">port 8080</text>
+
+  <rect x="905" y="505" width="190" height="88" class="box data" />
+  <text x="956" y="541" class="label">SQLite</text>
+  <text x="930" y="568" class="text">Host volume on back-vm</text>
+
+  <rect x="905" y="98" width="190" height="88" class="box external" />
+  <text x="955" y="134" class="label">YNA RSS</text>
+  <text x="938" y="161" class="text">External news feeds</text>
+
+  <path class="arrow" d="M252 334 L330 334" />
+  <text x="274" y="318" class="small">HTTPS</text>
+
+  <path class="arrow" d="M520 334 L600 334" />
+  <text x="545" y="318" class="small">HTTP</text>
+
+  <path class="arrow" d="M810 334 L890 334" />
+  <text x="831" y="318" class="small">/api</text>
+
+  <path class="arrow" d="M1000 424 L1000 505" />
+  <text x="1014" y="468" class="small">JDBC</text>
+
+  <path class="arrow dashed" d="M1000 244 L1000 186" />
+  <text x="1014" y="218" class="small">HTTPS RSS</text>
+
+  <text x="70" y="626" class="small">Security boundary: expose edge-vm only; front-vm accepts edge traffic; back-vm accepts front-vm API traffic only.</text>
+</svg>

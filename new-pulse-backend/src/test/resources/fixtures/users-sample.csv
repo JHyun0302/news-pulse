@@ -1,0 +1,4 @@
+user_no,name,device_id,push_type,categories,dnd_time
+1,테스트사용자1,device-apns-1,APNs,"정치,경제",-
+2,테스트사용자2,device-fcm-2,FCM,"북한,사회",23:00-11:00
+3,테스트사용자3,device-fcm-3,FCM,산업,09:00-18:00

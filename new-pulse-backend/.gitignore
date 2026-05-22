@@ -1,0 +1,13 @@
+target/
+.mvn/wrapper/maven-wrapper.jar
+news-pulse.sqlite
+*.sqlite
+*.db
+data/
+.env
+!.env.example
+!deliverables/
+!deliverables/.gitkeep
+!deliverables/README.md
+!deliverables/*.csv
+!deliverables/*.sqlite

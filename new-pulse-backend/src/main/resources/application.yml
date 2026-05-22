@@ -1,0 +1,29 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: news-pulse-backend
+  datasource:
+    url: jdbc:sqlite:${NEWS_PULSE_DB_PATH:news-pulse.sqlite}
+    driver-class-name: org.sqlite.JDBC
+    hikari:
+      maximum-pool-size: 1
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+
+news-pulse:
+  seed:
+    import-enabled: true
+  rss:
+    fixed-delay-ms: 600000
+    scheduler:
+      enabled: true
+    feeds:
+      POLITICS: https://www.yna.co.kr/rss/politics.xml
+      NORTH_KOREA: https://www.yna.co.kr/rss/northkorea.xml
+      ECONOMY: https://www.yna.co.kr/rss/economy.xml
+      INDUSTRY: https://www.yna.co.kr/rss/industry.xml
+      SOCIETY: https://www.yna.co.kr/rss/society.xml

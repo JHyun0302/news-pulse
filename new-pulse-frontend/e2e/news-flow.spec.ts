@@ -58,7 +58,7 @@ test("카테고리에서 상세로 이동하고 읽음 상태를 반영한다", 
   await expect(page.locator("article h1")).toContainText(articleTitle.slice(0, 12));
   await expect(page.getByText("읽음", { exact: true })).toBeVisible();
 
-  const originalLink = page.getByRole("link", { name: "원문 열기" });
+  const originalLink = page.getByRole("link", { name: "연합뉴스 원문 보기" });
   await expect(originalLink).toBeVisible();
   await expect(originalLink).toHaveAttribute("target", "_blank");
   await expect(originalLink).toHaveAttribute("href", /^https:\/\/www\.yna\.co\.kr\/view\//);
@@ -103,7 +103,7 @@ test("모바일 폭에서 주요 화면이 가로 넘침 없이 표시된다", a
   });
 
   await page.locator("li a").first().click();
-  await expect(page.getByRole("link", { name: "원문 열기" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "연합뉴스 원문 보기" })).toBeVisible();
   await expectNoHorizontalOverflow(page);
   await page.screenshot({
     path: path.join(screenshotDir, "mobile-article-detail.png"),

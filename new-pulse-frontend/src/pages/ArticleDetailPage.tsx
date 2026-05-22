@@ -39,17 +39,17 @@ export function ArticleDetailPage() {
   const backCategory = fromCategory ?? articleQuery.data?.categories[0];
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Link
           to={backCategory ? `/categories/${backCategory}` : "/"}
-          className="inline-flex items-center gap-2 text-sm font-semibold text-[#2b8a7e] hover:text-[#22675d]"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-[#b42318] hover:text-[#8f1d14]"
         >
           <ArrowLeft aria-hidden="true" size={16} />
           목록으로
         </Link>
         {readMutation.isError ? (
-          <span className="text-sm font-medium text-[#8d352d]">읽음 처리 실패</span>
+          <span className="text-sm font-medium text-[#b42318]">읽음 처리 실패</span>
         ) : null}
       </div>
 
@@ -60,24 +60,24 @@ export function ArticleDetailPage() {
       ) : null}
 
       {articleQuery.isSuccess ? (
-        <article className="rounded-lg border border-[#d9d2c4] bg-[#fffdf8] p-5 shadow-sm sm:p-6">
+        <article className="border-y border-[#d8dee8] bg-white py-5 sm:py-7">
           <div className="flex flex-wrap items-center gap-2">
             <StatusBadge variant={markedRead || readMutation.isSuccess || articleQuery.data.read ? "read" : "unread"} />
             {articleQuery.data.categories.map((category) => (
               <span
                 key={category}
-                className="inline-flex h-7 items-center rounded-lg border border-[#75a99f] bg-[#e3f3ef] px-2.5 text-xs font-semibold text-[#22675d]"
+                className="inline-flex h-6 items-center border border-[#c7cdd6] bg-[#f9fafb] px-2 text-xs font-semibold text-[#4b5563]"
               >
                 {category}
               </span>
             ))}
           </div>
 
-          <h1 className="mt-5 break-keep text-2xl font-bold tracking-normal text-[#1f2933] sm:text-4xl">
+          <h1 className="mt-5 max-w-5xl break-keep text-2xl font-bold leading-9 tracking-normal text-[#111827] sm:text-4xl sm:leading-[1.25]">
             {articleQuery.data.title}
           </h1>
 
-          <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-[#647067]">
+          <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 border-b border-[#e5e7eb] pb-5 text-sm text-[#6b7280]">
             <span className="inline-flex items-center gap-1.5">
               <UserRound aria-hidden="true" size={16} />
               {articleQuery.data.creator || "작성자 미상"}
@@ -86,18 +86,15 @@ export function ArticleDetailPage() {
             <span>{articleQuery.data.articleId}</span>
           </div>
 
-          <div className="mt-8 border-t border-[#ded8ce] pt-5">
-            <p className="max-w-3xl text-sm leading-7 text-[#4d5a53]">
-              원문 본문은 저장하지 않고 연합뉴스 원문 링크를 새 탭으로 엽니다.
-            </p>
+          <div className="mt-6">
             <a
               href={articleQuery.data.link}
               target="_blank"
               rel="noreferrer"
-              className="mt-4 inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-[#2b8a7e] px-4 text-sm font-semibold text-white hover:bg-[#22675d]"
+              className="inline-flex h-10 items-center justify-center gap-2 bg-[#111827] px-4 text-sm font-semibold text-white hover:bg-[#b42318]"
             >
               <ExternalLink aria-hidden="true" size={17} />
-              원문 열기
+              연합뉴스 원문 보기
             </a>
           </div>
         </article>

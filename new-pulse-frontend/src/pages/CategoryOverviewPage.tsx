@@ -10,13 +10,12 @@ export function CategoryOverviewPage() {
   const categoriesQuery = useCategoriesQuery(clientId);
 
   return (
-    <section className="space-y-6">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+    <section className="space-y-5">
+      <div className="border-b border-[#d8dee8] pb-4">
+        <p className="text-xs font-bold uppercase tracking-[0.08em] text-[#b42318]">News Categories</p>
         <div>
-          <h1 className="text-3xl font-bold tracking-normal text-[#1f2933]">카테고리</h1>
-          <p className="mt-2 text-sm leading-6 text-[#647067]">
-            관심 있는 분야를 선택해 최신 기사와 읽음 상태를 확인합니다.
-          </p>
+          <h1 className="mt-2 text-2xl font-bold tracking-normal text-[#111827] sm:text-3xl">카테고리</h1>
+          <p className="mt-2 text-sm leading-6 text-[#6b7280]">정치, 북한, 경제, 산업, 사회 뉴스를 빠르게 확인합니다.</p>
         </div>
       </div>
 
@@ -34,7 +33,7 @@ export function CategoryOverviewPage() {
       ) : null}
 
       {categoriesQuery.isSuccess && categoriesQuery.data.items.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
           {categoriesQuery.data.items.map((category) => (
             <CategoryCard key={category.code} category={category} />
           ))}

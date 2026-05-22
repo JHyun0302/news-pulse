@@ -33,7 +33,7 @@ test("카테고리에서 상세로 이동하고 읽음 상태를 반영한다", 
   await mkdir(screenshotDir, { recursive: true });
 
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "카테고리" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "카테고리별 RSS 뉴스 현황" })).toBeVisible();
 
   for (const categoryName of ["정치", "북한", "경제", "산업", "사회"]) {
     await expect(page.getByRole("link", { name: `${categoryName} 기사 목록 보기` })).toBeVisible();
@@ -46,7 +46,7 @@ test("카테고리에서 상세로 이동하고 읽음 상태를 반영한다", 
 
   await page.getByRole("link", { name: "정치 기사 목록 보기" }).click();
   await expect(page).toHaveURL(/\/categories\/POLITICS$/);
-  await expect(page.getByRole("heading", { name: "정치", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "정치 최신뉴스", exact: true })).toBeVisible();
 
   const firstArticle = page.locator("li a").first();
   await expect(firstArticle).toBeVisible();
@@ -87,7 +87,8 @@ test("모바일 폭에서 주요 화면이 가로 넘침 없이 표시된다", a
   await mkdir(screenshotDir, { recursive: true });
 
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "카테고리" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "카테고리별 RSS 뉴스 현황" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "정치 기사 목록 보기" })).toBeVisible();
   await expectNoHorizontalOverflow(page);
   await page.screenshot({
     path: path.join(screenshotDir, "mobile-category-overview.png"),
@@ -95,15 +96,19 @@ test("모바일 폭에서 주요 화면이 가로 넘침 없이 표시된다", a
   });
 
   await page.getByRole("link", { name: "정치 기사 목록 보기" }).click();
-  await expect(page.getByRole("heading", { name: "정치", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "정치 최신뉴스", exact: true })).toBeVisible();
+  const mobileFirstArticle = page.locator("li a").first();
+  await expect(mobileFirstArticle).toBeVisible();
+  await expect(mobileFirstArticle.getByText("미읽음", { exact: true })).toBeVisible();
   await expectNoHorizontalOverflow(page);
   await page.screenshot({
     path: path.join(screenshotDir, "mobile-article-list.png"),
     fullPage: true
   });
 
-  await page.locator("li a").first().click();
+  await mobileFirstArticle.click();
   await expect(page.getByRole("link", { name: "연합뉴스 원문 보기" })).toBeVisible();
+  await expect(page.getByText("읽음", { exact: true })).toBeVisible();
   await expectNoHorizontalOverflow(page);
   await page.screenshot({
     path: path.join(screenshotDir, "mobile-article-detail.png"),

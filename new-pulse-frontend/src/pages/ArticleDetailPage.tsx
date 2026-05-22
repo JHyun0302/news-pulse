@@ -1,4 +1,4 @@
-import { ArrowLeft, ExternalLink, UserRound } from "lucide-react";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { ErrorState } from "../components/ErrorState";
@@ -7,6 +7,7 @@ import { StatusBadge } from "../components/StatusBadge";
 import { useArticleDetailQuery, useMarkArticleReadMutation } from "../hooks/useArticles";
 import { useClientId } from "../hooks/useClientId";
 import type { CategoryCode } from "../types/api";
+import { getCategoryLabel } from "../utils/category";
 import { formatPublishedAt } from "../utils/date";
 
 interface DetailLocationState {
@@ -39,7 +40,7 @@ export function ArticleDetailPage() {
   const backCategory = fromCategory ?? articleQuery.data?.categories[0];
 
   return (
-    <section className="space-y-5">
+    <section className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Link
           to={backCategory ? `/categories/${backCategory}` : "/"}
@@ -60,7 +61,7 @@ export function ArticleDetailPage() {
       ) : null}
 
       {articleQuery.isSuccess ? (
-        <article className="border-y border-[#d8dee8] bg-white py-5 sm:py-7">
+        <article className="border-y border-[#d8dee8] bg-white py-5 sm:py-6">
           <div className="flex flex-wrap items-center gap-2">
             <StatusBadge variant={markedRead || readMutation.isSuccess || articleQuery.data.read ? "read" : "unread"} />
             {articleQuery.data.categories.map((category) => (
@@ -68,23 +69,33 @@ export function ArticleDetailPage() {
                 key={category}
                 className="inline-flex h-6 items-center border border-[#c7cdd6] bg-[#f9fafb] px-2 text-xs font-semibold text-[#4b5563]"
               >
-                {category}
+                {getCategoryLabel(category)}
               </span>
             ))}
           </div>
 
-          <h1 className="mt-5 max-w-5xl break-keep text-2xl font-bold leading-9 tracking-normal text-[#111827] sm:text-4xl sm:leading-[1.25]">
+          <h1 className="mt-4 max-w-5xl break-keep text-2xl font-bold leading-9 tracking-normal text-[#111827] sm:text-4xl sm:leading-[1.25]">
             {articleQuery.data.title}
           </h1>
 
-          <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 border-b border-[#e5e7eb] pb-5 text-sm text-[#6b7280]">
-            <span className="inline-flex items-center gap-1.5">
-              <UserRound aria-hidden="true" size={16} />
-              {articleQuery.data.creator || "작성자 미상"}
-            </span>
-            <time dateTime={articleQuery.data.publishedAt}>{formatPublishedAt(articleQuery.data.publishedAt)}</time>
-            <span>{articleQuery.data.articleId}</span>
-          </div>
+          <dl className="mt-5 grid gap-2 border-y border-[#e5e7eb] py-3 text-sm text-[#6b7280] sm:grid-cols-[auto_auto_1fr] sm:gap-x-5">
+            <div className="flex min-w-0 gap-2">
+              <dt className="shrink-0 font-semibold text-[#374151]">기자</dt>
+              <dd className="min-w-0 break-keep">{articleQuery.data.creator || "작성자 미상"}</dd>
+            </div>
+            <div className="flex min-w-0 gap-2">
+              <dt className="shrink-0 font-semibold text-[#374151]">송고</dt>
+              <dd>
+                <time dateTime={articleQuery.data.publishedAt}>
+                  {formatPublishedAt(articleQuery.data.publishedAt)}
+                </time>
+              </dd>
+            </div>
+            <div className="flex min-w-0 gap-2">
+              <dt className="shrink-0 font-semibold text-[#374151]">기사ID</dt>
+              <dd className="min-w-0 break-all text-[#6b7280]">{articleQuery.data.articleId}</dd>
+            </div>
+          </dl>
 
           <div className="mt-6">
             <a

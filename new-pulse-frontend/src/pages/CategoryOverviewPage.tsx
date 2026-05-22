@@ -10,12 +10,16 @@ export function CategoryOverviewPage() {
   const categoriesQuery = useCategoriesQuery(clientId);
 
   return (
-    <section className="space-y-5">
-      <div className="border-b border-[#d8dee8] pb-4">
-        <p className="text-xs font-bold uppercase tracking-[0.08em] text-[#b42318]">News Categories</p>
+    <section className="space-y-4">
+      <div className="border-b border-[#d8dee8] pb-3">
+        <p className="text-xs font-bold text-[#b42318]">RSS 뉴스 현황</p>
         <div>
-          <h1 className="mt-2 text-2xl font-bold tracking-normal text-[#111827] sm:text-3xl">카테고리</h1>
-          <p className="mt-2 text-sm leading-6 text-[#6b7280]">정치, 북한, 경제, 산업, 사회 뉴스를 빠르게 확인합니다.</p>
+          <h1 className="mt-1.5 text-2xl font-bold tracking-normal text-[#111827] sm:text-3xl">
+            카테고리별 RSS 뉴스 현황
+          </h1>
+          <p className="mt-1.5 text-sm leading-6 text-[#6b7280]">
+            정치, 북한, 경제, 산업, 사회의 수집 기사와 미읽음 수를 확인합니다.
+          </p>
         </div>
       </div>
 
@@ -33,7 +37,7 @@ export function CategoryOverviewPage() {
       ) : null}
 
       {categoriesQuery.isSuccess && categoriesQuery.data.items.length > 0 ? (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+        <div className="grid border-y border-[#d8dee8] bg-white sm:grid-cols-5">
           {categoriesQuery.data.items.map((category) => (
             <CategoryCard key={category.code} category={category} />
           ))}

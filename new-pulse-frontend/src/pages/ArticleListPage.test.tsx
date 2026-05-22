@@ -35,8 +35,8 @@ describe("ArticleListPage", () => {
       path: "/categories/:categoryCode"
     });
 
-    expect(await screen.findByRole("heading", { name: "정치" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /정치 기사/ })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "정치 최신뉴스" })).toBeInTheDocument();
+    expect(await screen.findByRole("link", { name: /정치 기사/ })).toBeInTheDocument();
   });
 
   it("빈 기사 목록 상태를 표시한다", async () => {

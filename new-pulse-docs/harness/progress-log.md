@@ -412,3 +412,102 @@ PM 판단:
 
 - 기능, 통합, Docker, Playwright, Chrome QA 기준 제출 가능한 green 상태다.
 - 다음 작업은 공개 저장소 문서 수위 최종 점검, UI 개선 여부 결정, `main` 병합 준비다.
+
+## 2026-05-23 UI polish 이후 최종 QA
+
+세션:
+
+- frontend
+- test-qa
+
+전제:
+
+- frontend UI polish 커밋 `0d6dc16 style: 뉴스 서비스형 UI 정리` 이후 최신 `feature/m1-m8-implementation` 기준 검증
+- QA 기준 URL은 Docker compose `http://localhost:3000`
+
+브랜치 확인:
+
+- `git pull origin feature/m1-m8-implementation`: `Already up to date`
+- `git status --short --branch`: `feature/m1-m8-implementation...origin/feature/m1-m8-implementation`
+
+자동 테스트:
+
+- Backend `./mvnw test`: 통과, 16 tests
+- Backend `./mvnw -q -DskipTests package`: 통과
+- Frontend `npm test`: 통과, 16 tests
+- Frontend `npm run build`: 통과
+- Frontend `npx playwright test`: 통과, 2 tests
+- RSS collect 이후 README용 기본 스크린샷 동기화를 위해 Playwright를 재실행했고 2 tests 모두 통과
+
+Docker local QA:
+
+```bash
+docker compose -f docker-compose.local.yml -p news-pulse up -d --build
+# 성공
+```
+
+- `news-pulse-frontend-local`: `healthy`
+- `news-pulse-backend-local`: `healthy`
+- `http://localhost:3000/healthz`: `ok`
+- `http://localhost:3000/api/health`: `UP`
+- `http://localhost:8080/api/health`: `UP`
+- `http://localhost:3000/`: `200 OK`
+
+데이터 검증:
+
+- RSS collect: feed 5, 신규 3, duplicate skip 557, failed feed 0
+- Push dispatch: target 19,815, success 9,794, fail 10,021, DND skip 9,448, duplicate skip 4,297
+- SQLite `PRAGMA integrity_check`: `ok`
+- SQLite count:
+  - `articles`: 463
+  - `article_categories`: 565
+  - `users`: 100
+  - `user_preferences`: 300
+  - `push_histories`: 19,815
+  - `article_read_states`: 25
+  - duplicate push pair: 0
+- Push history status count:
+  - `success`: 9,794
+  - `fail`: 10,021
+- Category count:
+  - `POLITICS`: 123
+  - `NORTH_KOREA`: 80
+  - `ECONOMY`: 120
+  - `INDUSTRY`: 120
+  - `SOCIETY`: 122
+- CSV export 검증: `/tmp/news-pulse-ui-polish-export`에 `articles.csv`, `article_categories.csv`, `push_histories.csv`, `export-summary.csv`, `news-pulse-qa.sqlite` 생성 성공
+- 저장소의 기존 제출용 CSV/DB deliverable은 UI polish 영향 범위가 아니므로 덮어쓰지 않음
+
+Browser QA:
+
+- Playwright E2E: 카테고리 -> 목록 -> 상세 -> 읽음 반영 통과
+- Playwright mobile viewport: 가로 넘침/텍스트 겹침 없음
+- Chrome 직접 QA: `http://localhost:3000` 기준 카테고리 5개, 목록 row UI, 미읽음 표시, 상세 진입, `연합뉴스 원문 보기` 새 탭, 목록 복귀 후 읽음 반영 통과
+- Chrome console error: 0건
+
+스크린샷:
+
+- README용 스크린샷 최신화:
+  - `screenshots/category-overview.png`
+  - `screenshots/article-list-read-state.png`
+  - `screenshots/article-detail.png`
+  - `screenshots/mobile-category-overview.png`
+  - `screenshots/mobile-article-list.png`
+  - `screenshots/mobile-article-detail.png`
+- Chrome 직접 QA 보조 스크린샷 최신화:
+  - `screenshots/chrome-category-overview.png`
+  - `screenshots/chrome-article-detail.png`
+  - `screenshots/chrome-article-list-read-state.png`
+
+노출/문서 점검:
+
+- README의 스크린샷 링크가 실제 파일과 일치
+- tracked 파일 기준 원본 `.docx`, `.xlsx`, `.env`, runtime `news-pulse.sqlite` 없음
+- 스크린샷에 원본 과제 DOCX/XLSX 또는 메일 전문 노출 없음
+
+결함 판단:
+
+- API contract, 읽음 처리, 원문 새 탭 열기, Docker proxy 회귀 없음
+- backend 결함 없음
+- frontend 결함 없음
+- 문서 결함 없음

@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    url: jdbc:sqlite:file:memdb-news-pulse-test?mode=memory&cache=shared
+    driver-class-name: org.sqlite.JDBC
+    hikari:
+      maximum-pool-size: 1
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+
+news-pulse:
+  seed:
+    import-enabled: false
+  rss:
+    fixed-delay-ms: 600000
+    scheduler:
+      enabled: false
+    feeds:
+      POLITICS: https://example.invalid/rss/politics.xml
+      NORTH_KOREA: https://example.invalid/rss/northkorea.xml
+      ECONOMY: https://example.invalid/rss/economy.xml
+      INDUSTRY: https://example.invalid/rss/industry.xml
+      SOCIETY: https://example.invalid/rss/society.xml

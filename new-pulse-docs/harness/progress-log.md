@@ -214,3 +214,28 @@ PM 판단:
 - 프론트엔드는 기능 추가 없이 QA 결함 대응 모드로 전환한다.
 - QA 세션은 `http://localhost:8080`, `http://localhost:5173/` 기준으로 통합 검증을 수행한다.
 - 실제 backend 응답과 frontend type mismatch는 현재 없음.
+
+## 2026-05-22 Backend/Frontend 결함 대응 모드 확인
+
+세션:
+
+- backend
+- frontend
+
+완료 작업:
+
+- backend 세션은 QA 결함 대응 모드 전환을 확인
+- frontend 세션은 QA 결함 대응 모드 전환을 확인
+- 두 세션 모두 새 결함이 전달되지 않아 임의 코드 변경, 테스트 실행, 커밋, push를 수행하지 않음
+
+운영 기준:
+
+- 신규 기능 개발은 중단하고 QA 세션에서 보고되는 결함만 처리한다.
+- 결함 수정 전 재현 테스트를 먼저 추가한다.
+- API 계약과 응답 shape는 임의 변경하지 않는다.
+- 수정 발생 시 각 세션은 한글 Conventional Commit 메시지로 기능 단위 커밋 후 push한다.
+
+PM 판단:
+
+- 다음 작업은 M7 Test/QA 세션 시작이다.
+- Backend/Frontend 세션은 대기 상태로 두고, QA 결과에 따라 결함 수정 지시를 내린다.

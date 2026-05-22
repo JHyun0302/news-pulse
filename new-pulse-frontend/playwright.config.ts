@@ -1,5 +1,7 @@
 import { defineConfig } from "@playwright/test";
 
+const backendTarget = process.env.VITE_DEV_API_TARGET ?? "http://127.0.0.1:8080";
+
 export default defineConfig({
   testDir: "./e2e",
   timeout: 30_000,
@@ -20,7 +22,7 @@ export default defineConfig({
     }
   },
   webServer: {
-    command: "VITE_DEV_API_TARGET=http://127.0.0.1:18080 npm run dev -- --port 5173",
+    command: `VITE_DEV_API_TARGET=${backendTarget} npm run dev -- --port 5173`,
     url: "http://127.0.0.1:5173",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000

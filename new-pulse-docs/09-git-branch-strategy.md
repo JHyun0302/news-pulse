@@ -35,15 +35,30 @@ main
 
 ## 커밋 메시지 규칙
 
-Conventional Commits를 따른다.
+커밋 메시지는 한글로 작성한다. 타입은 Conventional Commits 형식을 유지하되, 설명 문장은 한글로 쓴다.
 
 ```text
-feat: add rss article collector
-fix: prevent duplicate push history insert
-test: cover dnd time window crossing midnight
-docs: add oci architecture diagram
-chore: configure frontend tooling
+feat: RSS 기사 수집기 추가
+fix: 푸시 이력 중복 저장 방지
+test: 자정을 넘는 DND 시간대 테스트 추가
+docs: OCI 아키텍처 다이어그램 추가
+chore: 프론트엔드 도구 설정 추가
 ```
+
+허용 타입:
+
+- `feat`: 기능 추가
+- `fix`: 결함 수정
+- `test`: 테스트 추가 또는 수정
+- `docs`: 문서 변경
+- `chore`: 빌드, 설정, 도구, 배포 보조 작업
+- `refactor`: 동작 변경 없는 구조 개선
+
+금지:
+
+- 영어 설명문만 있는 커밋 메시지
+- `update`, `fix`, `작업`처럼 변경 의도가 모호한 메시지
+- 여러 기능을 한 커밋에 섞고 포괄적인 메시지로 덮는 것
 
 ## 커밋 단위와 Push 규칙
 
@@ -75,10 +90,10 @@ git diff --check
 ```bash
 git add new-pulse-backend/src/main/resources/schema.sql
 git add new-pulse-backend/src/test/java/com/newpulse/article/ArticleRepositoryTest.java
-git commit -m "feat: add sqlite article schema"
+git commit -m "feat: SQLite 기사 스키마 추가"
 
 git add new-pulse-frontend/src/api new-pulse-frontend/src/hooks
-git commit -m "feat: add frontend article api hooks"
+git commit -m "feat: 프론트엔드 기사 API 훅 추가"
 ```
 
 Push 규칙:

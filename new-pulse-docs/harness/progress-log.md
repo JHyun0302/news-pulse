@@ -341,3 +341,74 @@ PM 판단:
 
 - M7 QA는 green 상태로 판단한다.
 - 다음 작업은 README/문서 최종화, 제출용 산출물 확인, main 병합 준비다.
+
+## 2026-05-22 제출용 README 최종화와 최종 QA
+
+세션:
+
+- docs
+- test-qa
+
+Docs 완료 작업:
+
+- 루트 `README.md`를 제출용 문서로 최종 정리
+- 프로젝트 개요, 기술 스택, 아키텍처 이미지, 실행 방법, 테스트/QA 명령, 주요 API, DB/산출물, 스크린샷, AI 활용 고지 반영
+- 로그인 없음, `client_id` 기반 읽음 상태, SQLite, DND skip, same-origin `/api` 등 주요 설계 판단 정리
+- 원본 DOCX/XLSX/메일/자소서 내용 노출 없음 확인
+
+Docs 검증:
+
+```bash
+git diff --check
+# 통과
+```
+
+- README 로컬 링크/이미지 경로 검사 통과
+- `git status --short --branch`: clean
+
+커밋:
+
+- `a3c3cc2 docs: 제출용 README 최종 정리`
+
+최종 QA 결과:
+
+- 최신 브랜치 pull 결과: `Already up to date`
+- HEAD: `a3c3cc2 docs: 제출용 README 최종 정리`
+- `git status --short --branch`: clean
+- Backend `./mvnw test`: 통과, 16 tests
+- Backend `./mvnw -q -DskipTests package`: 통과
+- Frontend `npm test`: 통과, 16 tests
+- Frontend `npm run build`: 통과
+- Frontend `npx playwright test`: 통과, 2 tests
+- Playwright 선행 데이터용 RSS collect: feed 5, 신규 460, 실패 0
+
+Docker QA:
+
+- `docker compose -f docker-compose.local.yml up -d --build`: 성공
+- `news-pulse-backend-local`: `healthy`
+- `news-pulse-frontend-local`: `healthy`
+- `http://localhost:3000/healthz`: `ok`
+- `http://localhost:3000/api/health`: `UP`
+- `http://localhost:8080/api/health`: `UP`
+- `http://localhost:3000/`: `200 OK`
+
+Browser QA:
+
+- Playwright E2E: 카테고리, 목록, 상세, 읽음 반영, 모바일 viewport 통과
+- Chrome 직접 QA: 카테고리 -> 목록 -> 상세 -> 원문 새 탭 -> 목록 복귀 읽음 반영 통과
+- Chrome console error: 0건
+- Chrome wrapper locator에서 일시적 CDP timeout이 있었으나 실제 브라우저 좌표 클릭으로 원문 새 탭/복귀 흐름 보완 검증
+- 앱 결함은 재현되지 않음
+
+README/노출 점검:
+
+- README 실행 명령, 산출물 경로, 스크린샷 링크가 실제 파일과 일치
+- README QA count는 `new-pulse-backend/deliverables/table-counts.csv`와 일치
+- tracked 파일에 원본 `.docx`, `.xlsx`, `.env`, runtime `news-pulse.sqlite` 없음
+- 원본 DOCX/XLSX/메일 전문의 원문 노출 없음
+- `new-pulse-docs/harness/codex-session-prompts.md`에는 작업용 메일 요약/제출 일정 문구가 남아 있어 공개 저장소 기준을 보수적으로 잡으면 PM 확인 대상
+
+PM 판단:
+
+- 기능, 통합, Docker, Playwright, Chrome QA 기준 제출 가능한 green 상태다.
+- 다음 작업은 공개 저장소 문서 수위 최종 점검, UI 개선 여부 결정, `main` 병합 준비다.

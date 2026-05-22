@@ -548,3 +548,110 @@ git diff --check
 남은 리스크:
 
 - 문서 보강 범위라 backend/frontend/Docker 테스트는 재실행하지 않음
+
+## 2026-05-23 뉴스 포털형 UI 이후 최종 QA
+
+세션:
+
+- frontend
+- test-qa
+
+전제:
+
+- 뉴스 포털형 UI 커밋 `9a8575c style: 뉴스 포털형 정보 구조 정리` 이후 최신 `feature/m1-m8-implementation` 기준 검증
+- QA 기준 URL은 Docker compose `http://localhost:3000`
+
+브랜치 확인:
+
+- `git pull origin feature/m1-m8-implementation`: `Already up to date`
+- `git status --short --branch`: `feature/m1-m8-implementation...origin/feature/m1-m8-implementation`
+
+자동 테스트:
+
+- Backend `./mvnw test`: 통과, 16 tests
+- Backend `./mvnw -q -DskipTests package`: 통과
+- Frontend `npm test`: 통과, 18 tests
+- Frontend `npm run build`: 통과
+- Frontend `npx playwright test`: 통과, 2 tests
+- Playwright 모바일 검증은 390px viewport 기준으로 가로 넘침 없음 확인
+
+Docker local QA:
+
+```bash
+docker compose -f docker-compose.local.yml -p news-pulse up -d --build
+# 성공
+```
+
+- `news-pulse-frontend-local`: `healthy`
+- `news-pulse-backend-local`: `healthy`
+- `http://localhost:3000/healthz`: `ok`
+- `http://localhost:3000/api/health`: `UP`
+- `http://localhost:8080/api/health`: `UP`
+- `http://localhost:3000/`: `200 OK`
+
+데이터 검증:
+
+- 기존 Docker DB에 기사와 push 이력이 충분하여 추가 RSS collect/dispatch는 실행하지 않음
+- SQLite `PRAGMA integrity_check`: `ok`
+- SQLite count:
+  - `articles`: 463
+  - `article_categories`: 565
+  - `users`: 100
+  - `user_preferences`: 300
+  - `push_histories`: 19,960
+  - `article_read_states`: 40
+  - duplicate push pair: 0
+- Push history status count:
+  - `success`: 9,876
+  - `fail`: 10,084
+- Category count:
+  - `POLITICS`: 123
+  - `NORTH_KOREA`: 80
+  - `ECONOMY`: 120
+  - `INDUSTRY`: 120
+  - `SOCIETY`: 122
+- 기존 제출용 산출물 count와 runtime DB count가 달라져 CSV/DB 산출물 갱신:
+  - `new-pulse-backend/deliverables/news-pulse-qa.sqlite`
+  - `new-pulse-backend/deliverables/articles.csv`
+  - `new-pulse-backend/deliverables/article_categories.csv`
+  - `new-pulse-backend/deliverables/push_histories.csv`
+  - `new-pulse-backend/deliverables/push-histories.csv`
+  - `new-pulse-backend/deliverables/table-counts.csv`
+  - `new-pulse-backend/deliverables/article-category-counts.csv`
+  - `new-pulse-backend/deliverables/push-history-status-counts.csv`
+  - `new-pulse-backend/deliverables/article_read_states.csv`
+  - `new-pulse-backend/deliverables/export-summary.csv`
+- 루트 `README.md`의 현재 QA 산출물 요약 count를 `table-counts.csv`와 일치하도록 갱신
+
+Browser QA:
+
+- Chrome 직접 QA: `http://localhost:3000` 기준 상단 카테고리 nav, 5개 카테고리 현황, 정치 최신뉴스 목록, 미읽음 표시, 상세 진입, `연합뉴스 원문 보기` 새 탭, 목록 복귀 후 읽음 반영 통과
+- Chrome console error: 0건
+- Playwright 390px 모바일 화면: 가로 넘침/겹침 없음
+- API contract, 읽음 처리, 원문 새 탭, Docker proxy 회귀 없음
+
+스크린샷:
+
+- README용 스크린샷 최신화:
+  - `screenshots/category-overview.png`
+  - `screenshots/article-list-read-state.png`
+  - `screenshots/article-detail.png`
+  - `screenshots/mobile-category-overview.png`
+  - `screenshots/mobile-article-list.png`
+  - `screenshots/mobile-article-detail.png`
+- Chrome 직접 QA 보조 스크린샷 최신화:
+  - `screenshots/chrome-category-overview.png`
+  - `screenshots/chrome-article-detail.png`
+  - `screenshots/chrome-article-list-read-state.png`
+
+노출 점검:
+
+- README 스크린샷 링크가 실제 파일과 일치
+- tracked 파일 기준 원본 `.docx`, `.xlsx`, `.env`, runtime `news-pulse.sqlite` 없음
+- 스크린샷에 원본 과제 문서, 원본 사용자 데이터, 제출 안내 원문 노출 없음
+
+결함 판단:
+
+- backend 결함 없음
+- frontend 결함 없음
+- 문서 결함 없음

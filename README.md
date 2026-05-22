@@ -199,12 +199,12 @@ new-pulse-backend/deliverables/
 
 | 항목 | 건수 |
 | --- | ---: |
-| articles | 456 |
-| article_categories | 562 |
+| articles | 463 |
+| article_categories | 565 |
 | users | 100 |
 | user_preferences | 300 |
-| push_histories | 21,617 |
-| article_read_states | 5 |
+| push_histories | 19,960 |
+| article_read_states | 40 |
 
 CSV export 명령:
 

@@ -239,3 +239,61 @@ PM 판단:
 
 - 다음 작업은 M7 Test/QA 세션 시작이다.
 - Backend/Frontend 세션은 대기 상태로 두고, QA 결과에 따라 결함 수정 지시를 내린다.
+
+## 2026-05-22 M7 QA 재실행 결과
+
+세션:
+
+- test-qa
+
+검증 결과:
+
+- Backend `./mvnw test`: 통과, 16 tests
+- Frontend `npm test`: 통과, 16 tests
+- Frontend `npm run build`: 통과
+- Frontend `npx playwright test`: 통과, 2 tests
+- Backend/Frontend 동시 실행 정상: `localhost:8080`, `localhost:5173`
+- `/api/health`: backend 8080, frontend proxy 5173 모두 `UP`
+- RSS collect: feed 5, 신규 456, 중복 106, 실패 0
+- push dispatch: target 21617, success 10814, fail 10803, DND skip 7492, duplicate skip 4573
+- Chrome 직접 QA 통과: 5개 카테고리, 목록, 미읽음, 상세, 원문 새 탭, 읽음 반영 확인
+- Chrome console error 0건
+- 모바일 QA: Playwright mobile viewport 기준 텍스트/버튼 겹침 없음
+- 원본 DOCX/XLSX/메일 전문 노출 없음 확인
+
+SQLite counts:
+
+```text
+articles: 456
+article_categories: 562
+users: 100
+user_preferences: 300
+push_histories: 21617
+article_read_states: 5
+duplicate push pairs: 0
+integrity_check: ok
+```
+
+산출물:
+
+- `new-pulse-backend/deliverables/*.csv`
+- `new-pulse-backend/deliverables/news-pulse-qa.sqlite`
+- `screenshots/*.png`
+
+커밋:
+
+- `c2be42f test: QA 산출물과 스크린샷 갱신`
+
+남은 결함:
+
+- Frontend/Docker 배포 결함 1건
+- `docker-compose.local.yml` 기동은 빌드/시작까지 완료됐지만 frontend 컨테이너 healthcheck가 `localhost/healthz`에서 실패해 `unhealthy`
+- 외부 `http://localhost:3000/healthz`와 컨테이너 내부 `http://127.0.0.1/healthz`는 `ok`
+- 컨테이너 내부 `http://localhost/healthz`만 connection refused
+
+PM 판단:
+
+- Backend 결함은 없다. backend 세션은 계속 대기한다.
+- Playwright config 결함은 재발하지 않았다.
+- 다음 작업은 frontend/infra healthcheck 주소를 `localhost`에서 `127.0.0.1`로 수정하는 것이다.
+- 수정 후 Docker local compose healthcheck만 부분 재검증하고, 전체 QA green 상태를 확정한다.

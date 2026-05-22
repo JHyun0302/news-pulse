@@ -259,7 +259,7 @@ PM 판단:
 - Chrome 직접 QA 통과: 5개 카테고리, 목록, 미읽음, 상세, 원문 새 탭, 읽음 반영 확인
 - Chrome console error 0건
 - 모바일 QA: Playwright mobile viewport 기준 텍스트/버튼 겹침 없음
-- 원본 DOCX/XLSX/메일 전문 노출 없음 확인
+- 원본 과제 문서, 원본 사용자 데이터, 제출 안내 원문 노출 없음 확인
 
 SQLite counts:
 
@@ -354,7 +354,7 @@ Docs 완료 작업:
 - 루트 `README.md`를 제출용 문서로 최종 정리
 - 프로젝트 개요, 기술 스택, 아키텍처 이미지, 실행 방법, 테스트/QA 명령, 주요 API, DB/산출물, 스크린샷, AI 활용 고지 반영
 - 로그인 없음, `client_id` 기반 읽음 상태, SQLite, DND skip, same-origin `/api` 등 주요 설계 판단 정리
-- 원본 DOCX/XLSX/메일/자소서 내용 노출 없음 확인
+- 원본 과제 문서, 원본 사용자 데이터, 제출 안내 원문, 개인 제출 자료 내용 노출 없음 확인
 
 Docs 검증:
 
@@ -405,8 +405,8 @@ README/노출 점검:
 - README 실행 명령, 산출물 경로, 스크린샷 링크가 실제 파일과 일치
 - README QA count는 `new-pulse-backend/deliverables/table-counts.csv`와 일치
 - tracked 파일에 원본 `.docx`, `.xlsx`, `.env`, runtime `news-pulse.sqlite` 없음
-- 원본 DOCX/XLSX/메일 전문의 원문 노출 없음
-- `new-pulse-docs/harness/codex-session-prompts.md`에는 작업용 메일 요약/제출 일정 문구가 남아 있어 공개 저장소 기준을 보수적으로 잡으면 PM 확인 대상
+- 원본 과제 문서, 원본 사용자 데이터, 제출 안내 원문 노출 없음
+- `new-pulse-docs/harness/codex-session-prompts.md`에는 작업용 제출 안내 문구가 남아 있어 공개 저장소 기준을 보수적으로 잡으면 PM 확인 대상
 
 PM 판단:
 
@@ -503,7 +503,7 @@ Browser QA:
 
 - README의 스크린샷 링크가 실제 파일과 일치
 - tracked 파일 기준 원본 `.docx`, `.xlsx`, `.env`, runtime `news-pulse.sqlite` 없음
-- 스크린샷에 원본 과제 DOCX/XLSX 또는 메일 전문 노출 없음
+- 스크린샷에 원본 과제 문서, 원본 사용자 데이터, 제출 안내 원문 노출 없음
 
 결함 판단:
 
@@ -511,3 +511,40 @@ Browser QA:
 - backend 결함 없음
 - frontend 결함 없음
 - 문서 결함 없음
+
+## 2026-05-23 제출 검증 문서 최종 보강
+
+세션:
+
+- docs
+
+완료 작업:
+
+- 최신 `feature/m1-m8-implementation` 브랜치 기준 문서 보강
+- 루트 `README.md`의 DB/산출물 섹션에 평가용 SQLite DB 경로 `new-pulse-backend/deliverables/news-pulse-qa.sqlite` 명시
+- CSV 산출물 경로 `new-pulse-backend/deliverables/`와 `sqlite3` 확인 SQL 위치 명확화
+- README QA count가 `new-pulse-backend/deliverables/table-counts.csv`와 일치함 확인
+- UI polish 이후 상세 화면 버튼 문구 `연합뉴스 원문 보기`를 README QA 설명에 반영
+- `new-pulse-backend/deliverables/README.md`를 현재 제출 상태에 맞춰 `news-pulse-qa.sqlite` 포함 산출물 안내로 수정
+- `new-pulse-docs/harness/codex-session-prompts.md`의 작업용 제출 안내 문구를 추상화하고 공개 저장소 가드레일만 유지
+
+검증 결과:
+
+```bash
+git pull origin feature/m1-m8-implementation
+# Already up to date.
+
+git status --short --branch
+# ## feature/m1-m8-implementation...origin/feature/m1-m8-implementation
+
+git diff --check
+# 통과
+```
+
+- README 이미지 링크가 모두 실제 파일과 일치
+- README QA count가 `table-counts.csv`와 일치
+- `rg` 기준 제출 일정, 상세 안내 원문처럼 보일 수 있는 문구, 불필요한 개인정보성 문구 매칭 없음
+
+남은 리스크:
+
+- 문서 보강 범위라 backend/frontend/Docker 테스트는 재실행하지 않음

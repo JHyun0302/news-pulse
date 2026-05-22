@@ -143,7 +143,7 @@ npx playwright test
 - Frontend build 통과
 - Playwright: 2 tests 통과
 - Docker Compose local: backend/frontend `healthy`
-- Chrome 직접 QA: 카테고리 -> 목록 -> 상세 -> 원문 새 탭 -> 읽음 반영 확인
+- Chrome 직접 QA: 카테고리 -> 목록 -> 상세 -> `연합뉴스 원문 보기` 새 탭 -> 읽음 반영 확인
 - Chrome console error: 0건
 
 ## 주요 API
@@ -192,6 +192,8 @@ new-pulse-backend/deliverables/
   export-summary.csv
   news-pulse-qa.sqlite
 ```
+
+평가용 SQLite DB 파일은 `new-pulse-backend/deliverables/news-pulse-qa.sqlite`입니다. CSV 산출물은 `new-pulse-backend/deliverables/` 아래에 함께 포함되어 있으며, SQLite 확인은 아래 `sqlite3` 예시 SQL을 그대로 실행하면 됩니다.
 
 현재 QA 산출물 요약:
 
@@ -294,7 +296,7 @@ docker build -f new-pulse-frontend/Dockerfile -t news-pulse-frontend:latest .
 
 ## 보안과 공개 저장소 기준
 
-- 원본 과제 문서, 원본 사용자 workbook, 안내 메일 전문은 저장소 문서와 코드에 복사하지 않았습니다.
+- 원본 과제 문서, 원본 사용자 workbook, 제출 안내 원문은 저장소 문서와 코드에 복사하지 않았습니다.
 - `.env`, 로컬 runtime DB, 원본 첨부 파일은 커밋 대상에서 제외합니다.
 - 공개 산출물에는 실행과 검증에 필요한 DB/CSV/스크린샷만 포함합니다.
 - 운영 로그에는 device id 전체값을 남기지 않는 기준으로 구현했습니다.

@@ -297,3 +297,47 @@ PM 판단:
 - Playwright config 결함은 재발하지 않았다.
 - 다음 작업은 frontend/infra healthcheck 주소를 `localhost`에서 `127.0.0.1`로 수정하는 것이다.
 - 수정 후 Docker local compose healthcheck만 부분 재검증하고, 전체 QA green 상태를 확정한다.
+
+## 2026-05-22 Infra healthcheck 수정과 부분 QA
+
+세션:
+
+- infra
+- test-qa
+
+완료 작업:
+
+- frontend Docker healthcheck URL을 `localhost`에서 `127.0.0.1`로 변경
+- local compose, frontend Dockerfile, front-vm compose healthcheck 기준 통일
+- nginx.conf와 API proxy 동작은 변경하지 않음
+- 앱 코드, API client, 화면 코드는 변경하지 않음
+
+커밋:
+
+- `526cf60 fix: 프론트 컨테이너 헬스체크 주소 수정`
+
+부분 QA 결과:
+
+```bash
+docker compose -f docker-compose.local.yml up -d --build
+# 성공
+```
+
+- frontend container: `healthy`
+- backend container: `healthy`
+- `http://localhost:3000/healthz`: `200 OK`, body `ok`
+- `http://localhost:3000/api/health`: `200`, `{"status":"UP","database":"UP",...}`
+- `http://localhost:8080/api/health`: `UP`
+- 첫 화면 `http://localhost:3000/`: `200 OK`, `News Pulse` HTML 응답 확인
+- 추가 결함 없음
+- working tree clean
+
+QA 판단:
+
+- 수정 영향이 Docker healthcheck/proxy 범위로 한정되어 Playwright/Chrome 전체 재검증은 생략
+- Docker local compose 기준 완료 조건 충족
+
+PM 판단:
+
+- M7 QA는 green 상태로 판단한다.
+- 다음 작업은 README/문서 최종화, 제출용 산출물 확인, main 병합 준비다.

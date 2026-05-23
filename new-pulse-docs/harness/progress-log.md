@@ -815,3 +815,76 @@ curl -s -o /tmp/news-pulse-admin-status.txt -w '%{http_code}\n' 'http://138.2.43
 
 - README 스크린샷 링크와 DB count는 최신 제출 산출물 기준과 일치
 - 공개 수위 점검에서 원본 과제 문서, 원본 사용자 데이터, 제출 안내 원문, 개인정보성 상세 문구 노출 없음
+
+## 2026-05-23 기사 목록 페이징 QA
+
+세션:
+
+- backend
+- frontend
+- test-qa
+
+전제:
+
+- 최신 `feature/m1-m8-implementation` 기준 검증
+- QA 기준 URL은 로컬 Docker compose `http://localhost:3000`
+
+브랜치 확인:
+
+- `git pull origin feature/m1-m8-implementation`: `Already up to date`
+- `git status --short --branch`: `feature/m1-m8-implementation...origin/feature/m1-m8-implementation`
+
+자동 테스트:
+
+- Backend `./mvnw test`: 통과, 20 tests
+- Backend `./mvnw -q -DskipTests package`: 통과
+- Frontend `npm test`: 통과, 20 tests
+- Frontend `npm run build`: 통과
+- Frontend `npx playwright test`: 통과, 2 tests
+
+Docker local QA:
+
+```bash
+docker compose -f docker-compose.local.yml -p news-pulse up -d --build
+# 성공
+```
+
+- `news-pulse-backend-local`: `healthy`
+- `news-pulse-frontend-local`: `healthy`
+- `http://localhost:3000/healthz`: `ok`
+- `http://localhost:3000/api/health`: `UP`
+- `http://localhost:8080/api/health`: `UP`
+
+페이징 검증:
+
+- 카테고리 현황에서 `POLITICS` 123건 확인
+- `GET /api/articles?category=POLITICS&limit=50`: `items=50`, `page.totalCount=123`, `page.hasNext=true`, `page.nextOffset=50`
+- UI에서 `전체 123건 중 50건 표시` 확인
+- `더보기` 클릭 후 `전체 123건 중 100건 표시` 확인
+- 더보기 후 article row 수: 100
+- 중복 article id: 0
+- 더보기 후 기존 첫 50건 순서 유지 확인
+- 상세 진입 후 읽음 처리, 목록 복귀 후 동일 article row `읽음` 반영 확인
+- 검증 article id: `AKR20260522149800063`
+
+Mobile QA:
+
+- Chrome channel Playwright viewport `390x844`
+- category overview, article list after more, article detail 모두 overflow 0
+- console error: 0건
+
+스크린샷:
+
+- 갱신:
+  - `screenshots/article-list-read-state.png`
+  - `screenshots/mobile-article-list.png`
+  - `screenshots/mobile-article-detail.png`
+- 추가:
+  - `screenshots/pagination-after-more-read-state.png`
+
+결함 판단:
+
+- backend 결함 없음
+- frontend 결함 없음
+- Docker/proxy 결함 없음
+- 모바일 레이아웃 결함 없음

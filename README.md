@@ -139,9 +139,9 @@ npx playwright test
 최종 QA 기록:
 
 - Backend test: 20 tests 통과
-- Frontend test: 20 tests 통과
+- Frontend test: 24 tests 통과
 - Frontend build 통과
-- Playwright: 2 tests 통과
+- Playwright: 3 tests 통과
 - Docker Compose local: backend/frontend `healthy`
 - Chrome 직접 QA: 카테고리 -> 목록 -> 상세 -> `연합뉴스 원문 보기` 새 탭 -> 읽음 반영 확인
 - Chrome console error: 0건

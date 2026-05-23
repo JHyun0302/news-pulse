@@ -16,24 +16,25 @@ news-pulse/
 ## 시스템 구성
 
 ```mermaid
-flowchart LR
-  RSS["YNA RSS feeds"] --> Collector["RSS collector"]
-  Collector --> Articles["articles / article_categories"]
-  Excel["local user workbook"] --> Importer["user importer"]
-  Importer --> Users["users / user_preferences"]
-  Articles --> Dispatcher["push dispatcher"]
-  Users --> Dispatcher
-  Dispatcher --> Push["APNS/FCM simulation service"]
-  Push --> History["push_histories"]
-  Browser["React app"] --> API["Spring REST API"]
-  API --> Articles
-  API --> ReadState["article_read_states"]
-  API --> History
-  Articles --> SQLite["SQLite file"]
-  Users --> SQLite
-  History --> SQLite
-  ReadState --> SQLite
+flowchart TD
+  Browser["사용자 브라우저"] --> React["React 뉴스 화면"]
+  React -->|"카테고리, 기사 목록, 상세, 읽음 처리"| API["Spring Boot REST API"]
+  API -->|"조회/저장"| DB[("SQLite DB")]
+  DB -->|"기사, 카테고리, 읽음 상태"| API
+
+  RSS["연합뉴스 RSS 5개 카테고리"] --> Collector["RSS 수집기"]
+  Collector -->|"article_id 중복 제거, 최대 1,000건 유지"| DB
+
+  Seed["사용자 seed 100명"] --> Importer["사용자 적재"]
+  Importer -->|"users, user_preferences 저장"| DB
+
+  DB -->|"신규 기사 + 사용자 선호 카테고리"| Selector["푸시 대상 선별"]
+  Selector -->|"DND 시간대 제외"| Push["APNS/FCM 시뮬레이션"]
+  Push -->|"success/fail 반환"| History["발송 이력 저장"]
+  History -->|"push_histories 저장"| DB
 ```
+
+이 그림은 배포 구조가 아니라 애플리케이션 데이터 흐름을 설명한다. OCI의 `edge-vm -> front-vm -> back-vm` 배포 구조와 네트워크 정책은 [OCI 인프라 아키텍처](05-deployment-oci.md)를 기준으로 확인한다.
 
 ## 설계 결정 이유
 

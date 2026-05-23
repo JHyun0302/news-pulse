@@ -47,5 +47,21 @@ npx playwright test
 최종 시연 전에는 Docker Compose 기준으로 다시 확인한다.
 
 ```bash
-docker compose up --build
+docker compose -f docker-compose.local.yml -p news-pulse up --build
 ```
+
+## 최종 제출 점검
+
+| 평가 항목 | 충족 여부 | 증거 파일 | 검증 명령/기록 |
+| --- | --- | --- | --- |
+| 카테고리 선택, 기사 리스트, 본문 링크, 읽음 상태 표시 | 충족 | `new-pulse-frontend/src/pages/**`, `screenshots/*.png`, `README.md` | `cd new-pulse-frontend && npm test`, `npx playwright test`, Chrome QA |
+| UI/UX 품질과 일관성 | 충족 | `new-pulse-frontend/src/components/**`, `new-pulse-frontend/src/styles.css`, `screenshots/category-overview.png` | Chrome desktop QA, Playwright 390px mobile overflow check |
+| 코드 품질, 구조, 유지보수성 | 충족 | `new-pulse-docs/02-architecture.md`, `new-pulse-docs/03-backend-design.md`, `new-pulse-docs/04-frontend-design.md` | backend/frontend test와 build 통과, 기능형 패키지와 컴포넌트 분리 확인 |
+| RSS 수집과 기사 저장 | 충족 | `new-pulse-backend/src/main/java/com/newpulse/article/**`, `new-pulse-backend/deliverables/articles.csv` | `cd new-pulse-backend && ./mvnw test`, 수동 RSS collect QA 기록 |
+| 사용자 필터링, DND 제외, APNS/FCM 분기 | 충족 | `new-pulse-backend/src/main/java/com/newpulse/push/**`, `new-pulse-backend/src/main/java/com/newpulse/user/**` | `PushDispatchServiceTest`, `UserImportServiceTest`, progress-log QA 기록 |
+| 푸시 발송 이력 저장과 중복 방지 | 충족 | `new-pulse-backend/src/main/resources/schema.sql`, `new-pulse-backend/deliverables/push_histories.csv` | `sqlite3 new-pulse-backend/deliverables/news-pulse-qa.sqlite "SELECT user_no, article_id, COUNT(*) FROM push_histories GROUP BY user_no, article_id HAVING COUNT(*) > 1;"` |
+| README 구조, 실행 방법, 기술 스택, 데이터 모델, DB 확인 방법 | 충족 | `README.md`, `new-pulse-backend/deliverables/README.md` | README 링크/이미지 경로 확인, `sqlite3` 확인 SQL 제공 |
+| SQLite/CSV 제출 산출물 | 충족 | `new-pulse-backend/deliverables/news-pulse-qa.sqlite`, `new-pulse-backend/deliverables/*.csv` | `table-counts.csv`, `push-history-status-counts.csv`, `PRAGMA integrity_check` QA 기록 |
+| Docker local 실행 | 충족 | `docker-compose.local.yml`, `new-pulse-backend/Dockerfile`, `new-pulse-frontend/Dockerfile` | `docker compose -f docker-compose.local.yml -p news-pulse up -d --build`, healthcheck QA 기록 |
+| OCI edge/front/back 배포 | 충족 | `deploy/edge/nginx.conf`, `deploy/front/docker-compose.yml`, `deploy/back/docker-compose.yml`, `new-pulse-docs/05-deployment-oci.md` | OCI edge URL smoke QA, Chrome/mobile QA 기록. README URL 고정 노출은 PM 최종 판단 항목 |
+| 공개 저장소 수위 | 충족 | `.gitignore`, `.dockerignore`, `README.md`, `new-pulse-docs/**` | `rg` 공개 수위 점검, `git ls-files` 금지 파일 추적 여부 확인 |

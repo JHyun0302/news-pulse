@@ -753,3 +753,32 @@ git diff --check
 - README 이미지 링크와 실제 파일 존재 확인 통과
 - `rg` 기준 제출 일정, 안내 원문, 개인정보성 상세 문구 노출 없음
 - 변경 파일은 README와 설계/진행 로그 문서로 한정
+
+## 2026-05-23 제출 전 평가항목 충족 여부 정리
+
+세션:
+
+- docs
+
+완료 작업:
+
+- 루트 `README.md`의 로컬 실행, Docker 실행, SQLite DB 경로, CSV 산출물 경로, 스크린샷, AI 활용 고지 유지 확인
+- README에 OCI edge URL 고정 노출 여부를 제출 직전 PM 최종 판단 항목으로 명시
+- `new-pulse-docs/harness/acceptance-matrix.md`에 평가항목별 충족 여부, 증거 파일, 검증 명령/기록 표 추가
+- 공개 저장소 수위 점검에서 작업용 원문 표현을 더 추상화
+
+최종 충족 요약:
+
+- 과제 1 기능 구현: 카테고리 선택, 기사 리스트, 본문 링크, 읽음 상태 표시 충족
+- UI/UX 품질: 뉴스 포털형 UI, desktop/mobile QA, 최신 스크린샷 기준 충족
+- 코드 품질: 기능형 backend 패키지, frontend component/query/API 분리, 테스트 기준 충족
+- 과제 2 구현: RSS 수집, 사용자 필터링, DND 제외, APNS/FCM 분기, push history 저장 충족
+- README: 구조, 실행 방법, 기술 스택, 데이터 모델, DB 확인 방법 충족
+- 배포: 로컬 Docker와 OCI edge/front/back QA 완료. README URL 고정 노출은 PM 최종 판단 항목
+
+검증 결과:
+
+- `git diff --check`: 통과
+- README 링크/이미지 경로 확인 통과
+- 공개 수위 `rg` 점검에서 제출 일정, 제출 안내 원문, 개인정보성 상세 문구 노출 없음
+- `git ls-files` 기준 원본 첨부 파일, `.env`, runtime DB, 로그 파일 추적 없음

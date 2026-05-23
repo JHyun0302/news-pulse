@@ -63,5 +63,5 @@ docker compose -f docker-compose.local.yml -p news-pulse up --build
 | README 구조, 실행 방법, 기술 스택, 데이터 모델, DB 확인 방법 | 충족 | `README.md`, `new-pulse-backend/deliverables/README.md` | README 링크/이미지 경로 확인, `sqlite3` 확인 SQL 제공 |
 | SQLite/CSV 제출 산출물 | 충족 | `new-pulse-backend/deliverables/news-pulse-qa.sqlite`, `new-pulse-backend/deliverables/*.csv` | `table-counts.csv`, `push-history-status-counts.csv`, `PRAGMA integrity_check` QA 기록 |
 | Docker local 실행 | 충족 | `docker-compose.local.yml`, `new-pulse-backend/Dockerfile`, `new-pulse-frontend/Dockerfile` | `docker compose -f docker-compose.local.yml -p news-pulse up -d --build`, healthcheck QA 기록 |
-| OCI edge/front/back 배포 | 충족 | `deploy/edge/nginx.conf`, `deploy/front/docker-compose.yml`, `deploy/back/docker-compose.yml`, `new-pulse-docs/05-deployment-oci.md` | OCI edge URL smoke QA, Chrome/mobile QA 기록. README URL 고정 노출은 PM 최종 판단 항목 |
+| OCI edge/front/back 배포 | 충족 | `deploy/edge/nginx.conf`, `deploy/front/docker-compose.yml`, `deploy/back/docker-compose.yml`, `new-pulse-docs/05-deployment-oci.md` | OCI edge URL smoke QA, Chrome/mobile QA 기록. README에 HTTP public IP 배포 확인 URL 명시 |
 | 공개 저장소 수위 | 충족 | `.gitignore`, `.dockerignore`, `README.md`, `new-pulse-docs/**` | `rg` 공개 수위 점검, `git ls-files` 금지 파일 추적 여부 확인 |

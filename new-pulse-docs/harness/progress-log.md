@@ -782,3 +782,36 @@ git diff --check
 - README 링크/이미지 경로 확인 통과
 - 공개 수위 `rg` 점검에서 제출 일정, 제출 안내 원문, 개인정보성 상세 문구 노출 없음
 - `git ls-files` 기준 원본 첨부 파일, `.env`, runtime DB, 로그 파일 추적 없음
+
+## 2026-05-23 OCI 배포 URL과 favicon 최종 반영
+
+세션:
+
+- docs
+
+완료 작업:
+
+- 루트 `README.md`에 배포 확인 URL `http://138.2.43.7` 추가
+- README에 현재 배포가 HTTP public IP 기준이며 TLS/도메인은 미구성임을 명시
+- `new-pulse-docs/05-deployment-oci.md`에 M8 실제 배포 결과, edge/front/back 역할, public edge admin API 차단 정책, SQLite 운영 경로, TLS/도메인 미구성 리스크 기록
+- public/private IP 공개 범위는 PM 최종 판단 항목으로 남기고, 문서에는 edge public URL만 기록
+- favicon 배포 확인 결과 기록
+
+검증 결과:
+
+```bash
+curl -fsSI http://138.2.43.7/
+# 200 OK
+
+curl -fsSI http://138.2.43.7/favicon.svg
+# 200 OK, Content-Type: image/svg+xml
+
+curl -fsS http://138.2.43.7/api/health
+# status UP, database UP
+
+curl -s -o /tmp/news-pulse-admin-status.txt -w '%{http_code}\n' 'http://138.2.43.7/api/admin/push-histories?limit=1'
+# 404
+```
+
+- README 스크린샷 링크와 DB count는 최신 제출 산출물 기준과 일치
+- 공개 수위 점검에서 원본 과제 문서, 원본 사용자 데이터, 제출 안내 원문, 개인정보성 상세 문구 노출 없음

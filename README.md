@@ -298,10 +298,10 @@ docker build -f new-pulse-frontend/Dockerfile -t news-pulse-frontend:latest .
 
 자세한 배포 절차는 [OCI Deployment](new-pulse-docs/05-deployment-oci.md)를 참고합니다.
 
-OCI 배포 URL 공개 여부:
+배포 확인 URL:
 
-- README에 OCI edge URL을 고정 노출할지는 제출 직전 PM 최종 판단 항목입니다.
-- 현재 저장소에는 edge/front/back 배포 파일, 로컬 실행 방법, Docker 검증 방법, OCI QA 기록을 포함했습니다.
+- [http://138.2.43.7](http://138.2.43.7)
+- 현재는 HTTP public IP로 확인하는 제출용 배포입니다. TLS와 도메인은 구성하지 않았습니다.
 
 ## 주요 설계 판단
 

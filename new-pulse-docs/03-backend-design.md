@@ -180,6 +180,8 @@ GET  /api/health
 8. 반환값은 dispatch 흐름 안에서 즉시 `push_histories`에 저장한다.
 9. `push_histories`의 `UNIQUE(user_no, article_id)` 제약과 service-level 발송 전 확인으로 같은 사용자에게 같은 기사가 중복 발송되지 않게 한다.
 
+실패 반환값은 재시도하지 않고 `fail` 상태의 발송 이력으로 저장한다. 재시도 큐를 만들면 별도 스케줄러, retry policy, backoff, idempotency, 실패 횟수 관리가 필요해져 과제 범위가 커진다. 과제 핵심은 발송 결과를 DB에 저장해 평가자가 직접 확인할 수 있는가이므로, 현재 구현은 실패도 검증 가능한 이력으로 남기는 데 집중한다.
+
 방해 금지 시간은 `HH:mm-HH:mm` 형식으로 파싱한다. `23:00-11:00`처럼 종료가 시작보다 빠르면 자정을 넘는 구간으로 처리한다. DND 파싱 실패 사용자는 전체 dispatch를 중단시키지 않고 제외한다.
 
 ## 사용자 데이터 적재

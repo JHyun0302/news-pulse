@@ -143,7 +143,7 @@ npx playwright test
 - Frontend build 통과
 - Playwright: 2 tests 통과
 - Docker Compose local: backend/frontend `healthy`
-- Chrome 직접 QA: 카테고리 -> 목록 -> 상세 -> 원문 새 탭 -> 읽음 반영 확인
+- Chrome 직접 QA: 카테고리 -> 목록 -> 상세 -> `연합뉴스 원문 보기` 새 탭 -> 읽음 반영 확인
 - Chrome console error: 0건
 
 ## 주요 API
@@ -162,6 +162,21 @@ Base path는 `/api`입니다.
 | `GET` | `/api/admin/push-histories?limit=100` | 발송 이력 조회 |
 
 상세 계약은 [API Contract](new-pulse-docs/07-api-contract.md)를 기준으로 합니다.
+
+## 푸시 시뮬레이션 구현
+
+백엔드는 RSS 수집 기사와 사용자 선호 카테고리를 매칭한 뒤, DND 시간대에 포함되는 사용자를 제외합니다. 남은 대상은 `push_type`에 따라 APNS 또는 FCM 경로로 분기합니다. `PushNotificationService` 인터페이스 시그니처는 과제 요구와 동일하게 유지했고, 구현체는 실제 외부 연동 없이 `Random` 기반으로 `success` 또는 `fail`을 반환합니다. 반환값은 즉시 `push_histories`에 저장하며, `UNIQUE(user_no, article_id)` 제약과 service-level 확인으로 같은 사용자에게 같은 기사가 중복 발송되지 않게 했습니다. 원천 데이터의 `APNs` 입력은 importer에서 `APNS`로 정규화합니다.
+
+실패 결과는 재시도 큐에 넣지 않고 `fail` 상태의 발송 이력으로 저장합니다. 재시도 큐를 만들면 별도 스케줄러, retry policy, backoff, idempotency, 실패 횟수 관리까지 필요해져 과제 범위를 크게 넓히기 때문입니다. 본 과제의 핵심은 발송 결과를 SQLite에 저장해 평가자가 직접 확인할 수 있는가이므로, 성공과 실패를 모두 검증 가능한 이력으로 남기는 데 집중했습니다.
+
+핵심 구현 위치:
+
+| 요구사항 | 구현 위치 |
+| --- | --- |
+| APNS/FCM 인터페이스와 랜덤 성공/실패 구현 | [PushNotificationService.java](new-pulse-backend/src/main/java/com/newpulse/push/PushNotificationService.java), [PushNotificationServiceImpl.java](new-pulse-backend/src/main/java/com/newpulse/push/PushNotificationServiceImpl.java) |
+| 선호 카테고리 매칭, DND 제외, 중복 확인, 이력 저장 흐름 | [PushDispatchService.java](new-pulse-backend/src/main/java/com/newpulse/push/PushDispatchService.java) |
+| `UNIQUE(user_no, article_id)` 중복 발송 방어 | [schema.sql](new-pulse-backend/src/main/resources/schema.sql) |
+| `APNs` 입력값을 `APNS`로 정규화 | [PushType.java](new-pulse-backend/src/main/java/com/newpulse/user/PushType.java), [UserImportService.java](new-pulse-backend/src/main/java/com/newpulse/user/UserImportService.java) |
 
 ## DB와 산출물
 
@@ -193,16 +208,18 @@ new-pulse-backend/deliverables/
   news-pulse-qa.sqlite
 ```
 
+평가용 SQLite DB 파일은 `new-pulse-backend/deliverables/news-pulse-qa.sqlite`입니다. CSV 산출물은 `new-pulse-backend/deliverables/` 아래에 함께 포함되어 있으며, SQLite 확인은 아래 `sqlite3` 예시 SQL을 그대로 실행하면 됩니다.
+
 현재 QA 산출물 요약:
 
 | 항목 | 건수 |
 | --- | ---: |
-| articles | 456 |
-| article_categories | 562 |
+| articles | 463 |
+| article_categories | 565 |
 | users | 100 |
 | user_preferences | 300 |
-| push_histories | 21,617 |
-| article_read_states | 5 |
+| push_histories | 19,960 |
+| article_read_states | 40 |
 
 CSV export 명령:
 
@@ -288,13 +305,14 @@ docker build -f new-pulse-frontend/Dockerfile -t news-pulse-frontend:latest .
 - 제공 사용자 데이터는 웹 로그인 사용자가 아니라 푸시 발송 대상자 seed로만 사용합니다.
 - RSS `guid`는 사용하지 않고, link URL 마지막 path segment에서 `article_id`를 추출합니다.
 - 같은 기사가 여러 카테고리에 나타날 수 있어 기사와 카테고리 매핑을 분리했습니다.
+- 뉴스 열람 앱은 기사 메타데이터와 읽음 상태를 관리하고 본문 소비는 원 출처로 연결합니다. 본문 수집/저장은 저작권, 출처 표기, 최신성, 삭제/수정 반영, HTML sanitizing, 이미지/동영상 자산 처리 문제가 생기고, iframe은 언론사 CSP/X-Frame-Options 정책으로 막힐 수 있어 새 탭 방식을 선택했습니다.
 - DND 시간대에 해당하는 사용자는 해당 발송에서 제외합니다. 보류 큐는 과제 범위 밖으로 두었습니다.
-- APNS/FCM은 실제 외부 연동 없이 `success` 또는 `fail` 결과를 시뮬레이션하고 DB에 저장합니다.
+- APNS/FCM은 실제 외부 연동 없이 `success` 또는 `fail` 결과를 시뮬레이션하고 DB에 저장합니다. 실패 재시도 큐는 과제 범위를 넓히므로 구현하지 않고, 실패도 검증 가능한 이력으로 남깁니다.
 - 프론트엔드는 같은 origin `/api` 호출을 기본으로 하며, dev server와 Nginx proxy가 백엔드 연결을 담당합니다.
 
 ## 보안과 공개 저장소 기준
 
-- 원본 과제 문서, 원본 사용자 workbook, 안내 메일 전문은 저장소 문서와 코드에 복사하지 않았습니다.
+- 원본 과제 문서, 원본 사용자 workbook, 제출 안내 원문은 저장소 문서와 코드에 복사하지 않았습니다.
 - `.env`, 로컬 runtime DB, 원본 첨부 파일은 커밋 대상에서 제외합니다.
 - 공개 산출물에는 실행과 검증에 필요한 DB/CSV/스크린샷만 포함합니다.
 - 운영 로그에는 device id 전체값을 남기지 않는 기준으로 구현했습니다.

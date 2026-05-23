@@ -168,13 +168,21 @@ GET  /api/health
 
 ## 푸시 발송
 
-- 신규 기사 기준으로 사용자 선호 카테고리를 매칭한다.
-- 사용자 push_type이 `APNS`면 APNS 메서드, `FCM`이면 FCM 메서드를 호출한다.
-- 제공 Excel의 `APNs` 값은 importer에서 `APNS`로 정규화한다.
-- 구현 메서드명은 인터페이스 요구에 맞춰 `sendAPNS`를 사용한다.
-- 방해 금지 시간은 `HH:mm-HH:mm` 형식으로 파싱한다.
-- `23:00-11:00`처럼 종료가 시작보다 빠르면 자정을 넘는 구간으로 처리한다.
-- 발송 시도 결과는 `push_histories`에 즉시 저장한다.
+실제 구현 흐름은 아래 순서를 따른다.
+
+1. RSS 수집으로 저장된 기사와 `article_categories`를 기준으로 발송 후보 기사를 조회한다.
+2. 기사 카테고리와 `user_preferences`를 매칭해 사용자가 선호한 카테고리 기사만 대상으로 삼는다.
+3. 사용자 `dnd_start`, `dnd_end`를 `TimeWindow`로 판단하고, 현재 시각이 DND 시간대에 포함되면 해당 사용자는 이번 발송에서 제외한다.
+4. importer는 원천 데이터의 `APNs` 입력값을 저장 전에 `APNS`로 정규화한다. 저장 이후 dispatch 로직은 `APNS`, `FCM` 두 값만 다룬다.
+5. 사용자 `push_type`이 `APNS`면 `sendAPNS`, `FCM`이면 `sendFCM`을 호출한다.
+6. `PushNotificationService` 인터페이스 시그니처는 과제 요구와 동일하게 유지한다.
+7. `PushNotificationServiceImpl`은 실제 외부 APNS/FCM 연동을 하지 않고 `Random` 기반으로 `"success"` 또는 `"fail"`을 반환한다.
+8. 반환값은 dispatch 흐름 안에서 즉시 `push_histories`에 저장한다.
+9. `push_histories`의 `UNIQUE(user_no, article_id)` 제약과 service-level 발송 전 확인으로 같은 사용자에게 같은 기사가 중복 발송되지 않게 한다.
+
+실패 반환값은 재시도하지 않고 `fail` 상태의 발송 이력으로 저장한다. 재시도 큐를 만들면 별도 스케줄러, retry policy, backoff, idempotency, 실패 횟수 관리가 필요해져 과제 범위가 커진다. 과제 핵심은 발송 결과를 DB에 저장해 평가자가 직접 확인할 수 있는가이므로, 현재 구현은 실패도 검증 가능한 이력으로 남기는 데 집중한다.
+
+방해 금지 시간은 `HH:mm-HH:mm` 형식으로 파싱한다. `23:00-11:00`처럼 종료가 시작보다 빠르면 자정을 넘는 구간으로 처리한다. DND 파싱 실패 사용자는 전체 dispatch를 중단시키지 않고 제외한다.
 
 ## 사용자 데이터 적재
 

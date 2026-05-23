@@ -1,4 +1,4 @@
-import { ArrowRight, Newspaper } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { CategorySummary } from "../types/api";
 
@@ -10,35 +10,27 @@ export function CategoryCard({ category }: CategoryCardProps) {
   return (
     <Link
       to={`/categories/${category.code}`}
-      className="group flex min-h-40 flex-col justify-between rounded-lg border border-[#d9d2c4] bg-[#fffdf8] p-5 shadow-sm transition hover:border-[#2b8a7e] hover:shadow-md"
+      className="group grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-[#e5e7eb] px-3 py-3 transition hover:bg-[#f8fafc] last:border-b-0 sm:min-h-24 sm:border-b-0 sm:border-r sm:px-4 sm:last:border-r-0"
       aria-label={`${category.name} 기사 목록 보기`}
     >
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-sm font-medium text-[#647067]">{category.code}</p>
-          <h2 className="mt-1 text-2xl font-bold tracking-normal text-[#1f2933]">{category.name}</h2>
-        </div>
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#e3f3ef] text-[#22675d]">
-          <Newspaper aria-hidden="true" size={20} />
-        </span>
-      </div>
-      <div className="mt-6 flex items-end justify-between gap-4">
-        <dl className="grid grid-cols-2 gap-4">
+      <div className="min-w-0">
+        <h2 className="text-base font-bold tracking-normal text-[#111827] sm:text-lg">{category.name}</h2>
+        <dl className="mt-2 grid max-w-44 grid-cols-2 gap-3 text-xs">
           <div>
-            <dt className="text-xs font-medium text-[#7b7469]">전체</dt>
-            <dd className="mt-1 text-xl font-semibold">{category.articleCount}</dd>
+            <dt className="font-medium text-[#6b7280]">전체</dt>
+            <dd className="mt-0.5 text-sm font-semibold text-[#111827]">{category.articleCount}</dd>
           </div>
           <div>
-            <dt className="text-xs font-medium text-[#7b7469]">미읽음</dt>
-            <dd className="mt-1 text-xl font-semibold text-[#a05d12]">{category.unreadCount}</dd>
+            <dt className="font-medium text-[#6b7280]">미읽음</dt>
+            <dd className="mt-0.5 text-sm font-semibold text-[#b42318]">{category.unreadCount}</dd>
           </div>
         </dl>
-        <ArrowRight
-          aria-hidden="true"
-          className="text-[#2b8a7e] transition group-hover:translate-x-1"
-          size={20}
-        />
       </div>
+      <ArrowRight
+        aria-hidden="true"
+        className="text-[#9ca3af] transition group-hover:translate-x-0.5 group-hover:text-[#b42318]"
+        size={17}
+      />
     </Link>
   );
 }

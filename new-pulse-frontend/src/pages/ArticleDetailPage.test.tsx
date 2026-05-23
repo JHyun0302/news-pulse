@@ -43,7 +43,7 @@ describe("ArticleDetailPage", () => {
     });
 
     expect(await screen.findByRole("heading", { name: "상세 기사" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "원문 열기" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "연합뉴스 원문 보기" })).toHaveAttribute(
       "href",
       "https://www.yna.co.kr/view/AKR20260518104500055"
     );

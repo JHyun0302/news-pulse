@@ -259,7 +259,7 @@ PM 판단:
 - Chrome 직접 QA 통과: 5개 카테고리, 목록, 미읽음, 상세, 원문 새 탭, 읽음 반영 확인
 - Chrome console error 0건
 - 모바일 QA: Playwright mobile viewport 기준 텍스트/버튼 겹침 없음
-- 원본 DOCX/XLSX/메일 전문 노출 없음 확인
+- 원본 과제 문서, 원본 사용자 데이터, 제출 안내 원문 노출 없음 확인
 
 SQLite counts:
 
@@ -341,3 +341,343 @@ PM 판단:
 
 - M7 QA는 green 상태로 판단한다.
 - 다음 작업은 README/문서 최종화, 제출용 산출물 확인, main 병합 준비다.
+
+## 2026-05-22 제출용 README 최종화와 최종 QA
+
+세션:
+
+- docs
+- test-qa
+
+Docs 완료 작업:
+
+- 루트 `README.md`를 제출용 문서로 최종 정리
+- 프로젝트 개요, 기술 스택, 아키텍처 이미지, 실행 방법, 테스트/QA 명령, 주요 API, DB/산출물, 스크린샷, AI 활용 고지 반영
+- 로그인 없음, `client_id` 기반 읽음 상태, SQLite, DND skip, same-origin `/api` 등 주요 설계 판단 정리
+- 원본 과제 문서, 원본 사용자 데이터, 제출 안내 원문, 개인 제출 자료 내용 노출 없음 확인
+
+Docs 검증:
+
+```bash
+git diff --check
+# 통과
+```
+
+- README 로컬 링크/이미지 경로 검사 통과
+- `git status --short --branch`: clean
+
+커밋:
+
+- `a3c3cc2 docs: 제출용 README 최종 정리`
+
+최종 QA 결과:
+
+- 최신 브랜치 pull 결과: `Already up to date`
+- HEAD: `a3c3cc2 docs: 제출용 README 최종 정리`
+- `git status --short --branch`: clean
+- Backend `./mvnw test`: 통과, 16 tests
+- Backend `./mvnw -q -DskipTests package`: 통과
+- Frontend `npm test`: 통과, 16 tests
+- Frontend `npm run build`: 통과
+- Frontend `npx playwright test`: 통과, 2 tests
+- Playwright 선행 데이터용 RSS collect: feed 5, 신규 460, 실패 0
+
+Docker QA:
+
+- `docker compose -f docker-compose.local.yml up -d --build`: 성공
+- `news-pulse-backend-local`: `healthy`
+- `news-pulse-frontend-local`: `healthy`
+- `http://localhost:3000/healthz`: `ok`
+- `http://localhost:3000/api/health`: `UP`
+- `http://localhost:8080/api/health`: `UP`
+- `http://localhost:3000/`: `200 OK`
+
+Browser QA:
+
+- Playwright E2E: 카테고리, 목록, 상세, 읽음 반영, 모바일 viewport 통과
+- Chrome 직접 QA: 카테고리 -> 목록 -> 상세 -> 원문 새 탭 -> 목록 복귀 읽음 반영 통과
+- Chrome console error: 0건
+- Chrome wrapper locator에서 일시적 CDP timeout이 있었으나 실제 브라우저 좌표 클릭으로 원문 새 탭/복귀 흐름 보완 검증
+- 앱 결함은 재현되지 않음
+
+README/노출 점검:
+
+- README 실행 명령, 산출물 경로, 스크린샷 링크가 실제 파일과 일치
+- README QA count는 `new-pulse-backend/deliverables/table-counts.csv`와 일치
+- tracked 파일에 원본 `.docx`, `.xlsx`, `.env`, runtime `news-pulse.sqlite` 없음
+- 원본 과제 문서, 원본 사용자 데이터, 제출 안내 원문 노출 없음
+- `new-pulse-docs/harness/codex-session-prompts.md`에는 작업용 제출 안내 문구가 남아 있어 공개 저장소 기준을 보수적으로 잡으면 PM 확인 대상
+
+PM 판단:
+
+- 기능, 통합, Docker, Playwright, Chrome QA 기준 제출 가능한 green 상태다.
+- 다음 작업은 공개 저장소 문서 수위 최종 점검, UI 개선 여부 결정, `main` 병합 준비다.
+
+## 2026-05-23 UI polish 이후 최종 QA
+
+세션:
+
+- frontend
+- test-qa
+
+전제:
+
+- frontend UI polish 커밋 `0d6dc16 style: 뉴스 서비스형 UI 정리` 이후 최신 `feature/m1-m8-implementation` 기준 검증
+- QA 기준 URL은 Docker compose `http://localhost:3000`
+
+브랜치 확인:
+
+- `git pull origin feature/m1-m8-implementation`: `Already up to date`
+- `git status --short --branch`: `feature/m1-m8-implementation...origin/feature/m1-m8-implementation`
+
+자동 테스트:
+
+- Backend `./mvnw test`: 통과, 16 tests
+- Backend `./mvnw -q -DskipTests package`: 통과
+- Frontend `npm test`: 통과, 16 tests
+- Frontend `npm run build`: 통과
+- Frontend `npx playwright test`: 통과, 2 tests
+- RSS collect 이후 README용 기본 스크린샷 동기화를 위해 Playwright를 재실행했고 2 tests 모두 통과
+
+Docker local QA:
+
+```bash
+docker compose -f docker-compose.local.yml -p news-pulse up -d --build
+# 성공
+```
+
+- `news-pulse-frontend-local`: `healthy`
+- `news-pulse-backend-local`: `healthy`
+- `http://localhost:3000/healthz`: `ok`
+- `http://localhost:3000/api/health`: `UP`
+- `http://localhost:8080/api/health`: `UP`
+- `http://localhost:3000/`: `200 OK`
+
+데이터 검증:
+
+- RSS collect: feed 5, 신규 3, duplicate skip 557, failed feed 0
+- Push dispatch: target 19,815, success 9,794, fail 10,021, DND skip 9,448, duplicate skip 4,297
+- SQLite `PRAGMA integrity_check`: `ok`
+- SQLite count:
+  - `articles`: 463
+  - `article_categories`: 565
+  - `users`: 100
+  - `user_preferences`: 300
+  - `push_histories`: 19,815
+  - `article_read_states`: 25
+  - duplicate push pair: 0
+- Push history status count:
+  - `success`: 9,794
+  - `fail`: 10,021
+- Category count:
+  - `POLITICS`: 123
+  - `NORTH_KOREA`: 80
+  - `ECONOMY`: 120
+  - `INDUSTRY`: 120
+  - `SOCIETY`: 122
+- CSV export 검증: `/tmp/news-pulse-ui-polish-export`에 `articles.csv`, `article_categories.csv`, `push_histories.csv`, `export-summary.csv`, `news-pulse-qa.sqlite` 생성 성공
+- 저장소의 기존 제출용 CSV/DB deliverable은 UI polish 영향 범위가 아니므로 덮어쓰지 않음
+
+Browser QA:
+
+- Playwright E2E: 카테고리 -> 목록 -> 상세 -> 읽음 반영 통과
+- Playwright mobile viewport: 가로 넘침/텍스트 겹침 없음
+- Chrome 직접 QA: `http://localhost:3000` 기준 카테고리 5개, 목록 row UI, 미읽음 표시, 상세 진입, `연합뉴스 원문 보기` 새 탭, 목록 복귀 후 읽음 반영 통과
+- Chrome console error: 0건
+
+스크린샷:
+
+- README용 스크린샷 최신화:
+  - `screenshots/category-overview.png`
+  - `screenshots/article-list-read-state.png`
+  - `screenshots/article-detail.png`
+  - `screenshots/mobile-category-overview.png`
+  - `screenshots/mobile-article-list.png`
+  - `screenshots/mobile-article-detail.png`
+- Chrome 직접 QA 보조 스크린샷 최신화:
+  - `screenshots/chrome-category-overview.png`
+  - `screenshots/chrome-article-detail.png`
+  - `screenshots/chrome-article-list-read-state.png`
+
+노출/문서 점검:
+
+- README의 스크린샷 링크가 실제 파일과 일치
+- tracked 파일 기준 원본 `.docx`, `.xlsx`, `.env`, runtime `news-pulse.sqlite` 없음
+- 스크린샷에 원본 과제 문서, 원본 사용자 데이터, 제출 안내 원문 노출 없음
+
+결함 판단:
+
+- API contract, 읽음 처리, 원문 새 탭 열기, Docker proxy 회귀 없음
+- backend 결함 없음
+- frontend 결함 없음
+- 문서 결함 없음
+
+## 2026-05-23 제출 검증 문서 최종 보강
+
+세션:
+
+- docs
+
+완료 작업:
+
+- 최신 `feature/m1-m8-implementation` 브랜치 기준 문서 보강
+- 루트 `README.md`의 DB/산출물 섹션에 평가용 SQLite DB 경로 `new-pulse-backend/deliverables/news-pulse-qa.sqlite` 명시
+- CSV 산출물 경로 `new-pulse-backend/deliverables/`와 `sqlite3` 확인 SQL 위치 명확화
+- README QA count가 `new-pulse-backend/deliverables/table-counts.csv`와 일치함 확인
+- UI polish 이후 상세 화면 버튼 문구 `연합뉴스 원문 보기`를 README QA 설명에 반영
+- `new-pulse-backend/deliverables/README.md`를 현재 제출 상태에 맞춰 `news-pulse-qa.sqlite` 포함 산출물 안내로 수정
+- `new-pulse-docs/harness/codex-session-prompts.md`의 작업용 제출 안내 문구를 추상화하고 공개 저장소 가드레일만 유지
+
+검증 결과:
+
+```bash
+git pull origin feature/m1-m8-implementation
+# Already up to date.
+
+git status --short --branch
+# ## feature/m1-m8-implementation...origin/feature/m1-m8-implementation
+
+git diff --check
+# 통과
+```
+
+- README 이미지 링크가 모두 실제 파일과 일치
+- README QA count가 `table-counts.csv`와 일치
+- `rg` 기준 제출 일정, 상세 안내 원문처럼 보일 수 있는 문구, 불필요한 개인정보성 문구 매칭 없음
+
+남은 리스크:
+
+- 문서 보강 범위라 backend/frontend/Docker 테스트는 재실행하지 않음
+
+## 2026-05-23 뉴스 포털형 UI 이후 최종 QA
+
+세션:
+
+- frontend
+- test-qa
+
+전제:
+
+- 뉴스 포털형 UI 커밋 `9a8575c style: 뉴스 포털형 정보 구조 정리` 이후 최신 `feature/m1-m8-implementation` 기준 검증
+- QA 기준 URL은 Docker compose `http://localhost:3000`
+
+브랜치 확인:
+
+- `git pull origin feature/m1-m8-implementation`: `Already up to date`
+- `git status --short --branch`: `feature/m1-m8-implementation...origin/feature/m1-m8-implementation`
+
+자동 테스트:
+
+- Backend `./mvnw test`: 통과, 16 tests
+- Backend `./mvnw -q -DskipTests package`: 통과
+- Frontend `npm test`: 통과, 18 tests
+- Frontend `npm run build`: 통과
+- Frontend `npx playwright test`: 통과, 2 tests
+- Playwright 모바일 검증은 390px viewport 기준으로 가로 넘침 없음 확인
+
+Docker local QA:
+
+```bash
+docker compose -f docker-compose.local.yml -p news-pulse up -d --build
+# 성공
+```
+
+- `news-pulse-frontend-local`: `healthy`
+- `news-pulse-backend-local`: `healthy`
+- `http://localhost:3000/healthz`: `ok`
+- `http://localhost:3000/api/health`: `UP`
+- `http://localhost:8080/api/health`: `UP`
+- `http://localhost:3000/`: `200 OK`
+
+데이터 검증:
+
+- 기존 Docker DB에 기사와 push 이력이 충분하여 추가 RSS collect/dispatch는 실행하지 않음
+- SQLite `PRAGMA integrity_check`: `ok`
+- SQLite count:
+  - `articles`: 463
+  - `article_categories`: 565
+  - `users`: 100
+  - `user_preferences`: 300
+  - `push_histories`: 19,960
+  - `article_read_states`: 40
+  - duplicate push pair: 0
+- Push history status count:
+  - `success`: 9,876
+  - `fail`: 10,084
+- Category count:
+  - `POLITICS`: 123
+  - `NORTH_KOREA`: 80
+  - `ECONOMY`: 120
+  - `INDUSTRY`: 120
+  - `SOCIETY`: 122
+- 기존 제출용 산출물 count와 runtime DB count가 달라져 CSV/DB 산출물 갱신:
+  - `new-pulse-backend/deliverables/news-pulse-qa.sqlite`
+  - `new-pulse-backend/deliverables/articles.csv`
+  - `new-pulse-backend/deliverables/article_categories.csv`
+  - `new-pulse-backend/deliverables/push_histories.csv`
+  - `new-pulse-backend/deliverables/push-histories.csv`
+  - `new-pulse-backend/deliverables/table-counts.csv`
+  - `new-pulse-backend/deliverables/article-category-counts.csv`
+  - `new-pulse-backend/deliverables/push-history-status-counts.csv`
+  - `new-pulse-backend/deliverables/article_read_states.csv`
+  - `new-pulse-backend/deliverables/export-summary.csv`
+- 루트 `README.md`의 현재 QA 산출물 요약 count를 `table-counts.csv`와 일치하도록 갱신
+
+Browser QA:
+
+- Chrome 직접 QA: `http://localhost:3000` 기준 상단 카테고리 nav, 5개 카테고리 현황, 정치 최신뉴스 목록, 미읽음 표시, 상세 진입, `연합뉴스 원문 보기` 새 탭, 목록 복귀 후 읽음 반영 통과
+- Chrome console error: 0건
+- Playwright 390px 모바일 화면: 가로 넘침/겹침 없음
+- API contract, 읽음 처리, 원문 새 탭, Docker proxy 회귀 없음
+
+스크린샷:
+
+- README용 스크린샷 최신화:
+  - `screenshots/category-overview.png`
+  - `screenshots/article-list-read-state.png`
+  - `screenshots/article-detail.png`
+  - `screenshots/mobile-category-overview.png`
+  - `screenshots/mobile-article-list.png`
+  - `screenshots/mobile-article-detail.png`
+- Chrome 직접 QA 보조 스크린샷 최신화:
+  - `screenshots/chrome-category-overview.png`
+  - `screenshots/chrome-article-detail.png`
+  - `screenshots/chrome-article-list-read-state.png`
+
+노출 점검:
+
+- README 스크린샷 링크가 실제 파일과 일치
+- tracked 파일 기준 원본 `.docx`, `.xlsx`, `.env`, runtime `news-pulse.sqlite` 없음
+- 스크린샷에 원본 과제 문서, 원본 사용자 데이터, 제출 안내 원문 노출 없음
+
+결함 판단:
+
+- backend 결함 없음
+- frontend 결함 없음
+- 문서 결함 없음
+
+## 2026-05-23 원문 링크와 푸시 설계 설명 보강
+
+세션:
+
+- docs
+
+완료 작업:
+
+- 원문 새 탭 설계 이유를 `02-architecture.md`, `04-frontend-design.md`, 루트 `README.md`에 보강
+- RSS 앱은 기사 메타데이터와 읽음 상태를 관리하고, 본문 소비는 원 출처로 연결한다는 역할 경계 명시
+- 본문 crawler/저장 방식의 저작권, 출처 표기, 본문 최신성, 삭제/수정 반영, HTML sanitizing, 이미지/동영상 자산 처리 부담을 문서화
+- iframe이 언론사 CSP/X-Frame-Options 정책으로 차단될 수 있어 새 탭 방식이 실용적 선택임을 문서화
+- `03-backend-design.md`의 푸시 발송 섹션에 기사-사용자 카테고리 매칭, DND 제외, APNS/FCM 분기, `Random` 기반 success/fail, `push_histories` 저장, 중복 방지, `APNs` 정규화 흐름을 단계별로 보강
+- README에 평가자 관점의 “푸시 시뮬레이션 구현” 섹션 추가
+
+검증 결과:
+
+```bash
+git diff --check
+# 통과
+```
+
+- README 이미지 링크와 실제 파일 존재 확인 통과
+- `rg` 기준 제출 일정, 안내 원문, 개인정보성 상세 문구 노출 없음
+- 변경 파일은 README와 설계/진행 로그 문서로 한정

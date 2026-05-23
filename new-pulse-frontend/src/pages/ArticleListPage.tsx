@@ -6,7 +6,7 @@ import { ErrorState } from "../components/ErrorState";
 import { LoadingBlock } from "../components/LoadingBlock";
 import { useArticlesQuery } from "../hooks/useArticles";
 import { useClientId } from "../hooks/useClientId";
-import { isCategoryCode } from "../utils/category";
+import { getCategoryLabel, isCategoryCode } from "../utils/category";
 
 export function ArticleListPage() {
   const { categoryCode } = useParams();
@@ -22,26 +22,30 @@ export function ArticleListPage() {
   }
 
   const articlesQuery = useArticlesQuery(categoryCode, clientId);
+  const categoryName = articlesQuery.data?.category.name ?? getCategoryLabel(categoryCode);
 
   return (
-    <section className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <section className="space-y-4">
+      <div className="flex flex-col gap-3 border-b border-[#d8dee8] pb-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-[#2b8a7e] hover:text-[#22675d]"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-[#b42318] hover:text-[#8f1d14]"
           >
             <ArrowLeft aria-hidden="true" size={16} />
-            카테고리
+            전체 카테고리
           </Link>
-          <h1 className="mt-3 text-3xl font-bold tracking-normal text-[#1f2933]">
-            {articlesQuery.data?.category.name ?? categoryCode}
+          <h1 className="mt-2 text-2xl font-bold tracking-normal text-[#111827] sm:text-3xl">
+            {categoryName} 최신뉴스
           </h1>
+          {articlesQuery.isSuccess ? (
+            <p className="mt-1 text-sm text-[#6b7280]">총 {articlesQuery.data.items.length}건</p>
+          ) : null}
         </div>
         <button
           type="button"
           onClick={() => void articlesQuery.refetch()}
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[#2b8a7e] bg-[#fffdf8] px-3 text-sm font-semibold text-[#22675d] hover:bg-[#e3f3ef]"
+          className="inline-flex h-9 items-center justify-center gap-2 border border-[#c7cdd6] bg-white px-3 text-sm font-semibold text-[#374151] hover:border-[#b42318] hover:text-[#b42318] sm:self-auto"
         >
           <RefreshCw aria-hidden="true" size={16} />
           새로고침
@@ -59,7 +63,7 @@ export function ArticleListPage() {
       ) : null}
 
       {articlesQuery.isSuccess && articlesQuery.data.items.length > 0 ? (
-        <ul className="space-y-3">
+        <ul className="divide-y divide-[#e5e7eb] border-y border-[#d8dee8] bg-white">
           {articlesQuery.data.items.map((article) => (
             <ArticleListItem key={article.articleId} article={article} categoryCode={categoryCode} />
           ))}

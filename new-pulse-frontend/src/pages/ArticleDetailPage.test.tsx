@@ -47,6 +47,7 @@ describe("ArticleDetailPage", () => {
       "href",
       "https://www.yna.co.kr/view/AKR20260518104500055"
     );
+    expect(screen.getByRole("link", { name: "목록으로" })).toHaveAttribute("href", "/categories/politics");
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith(

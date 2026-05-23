@@ -45,7 +45,7 @@ test("카테고리에서 상세로 이동하고 읽음 상태를 반영한다", 
   });
 
   await page.getByRole("link", { name: "정치 기사 목록 보기" }).click();
-  await expect(page).toHaveURL(/\/categories\/POLITICS$/);
+  await expect(page).toHaveURL(/\/categories\/politics$/);
   await expect(page.getByRole("heading", { name: "정치 최신뉴스", exact: true })).toBeVisible();
 
   const firstArticle = page.locator("li a").first();
@@ -69,7 +69,7 @@ test("카테고리에서 상세로 이동하고 읽음 상태를 반영한다", 
   });
 
   await page.getByRole("link", { name: "목록으로" }).click();
-  await expect(page).toHaveURL(/\/categories\/POLITICS$/);
+  await expect(page).toHaveURL(/\/categories\/politics$/);
 
   const readArticle = page.locator("li").filter({ hasText: articleTitle }).first();
   await expect(readArticle.getByText("읽음", { exact: true })).toBeVisible();
@@ -96,6 +96,7 @@ test("모바일 폭에서 주요 화면이 가로 넘침 없이 표시된다", a
   });
 
   await page.getByRole("link", { name: "정치 기사 목록 보기" }).click();
+  await expect(page).toHaveURL(/\/categories\/politics$/);
   await expect(page.getByRole("heading", { name: "정치 최신뉴스", exact: true })).toBeVisible();
   const mobileFirstArticle = page.locator("li a").first();
   await expect(mobileFirstArticle).toBeVisible();
@@ -114,4 +115,12 @@ test("모바일 폭에서 주요 화면이 가로 넘침 없이 표시된다", a
     path: path.join(screenshotDir, "mobile-article-detail.png"),
     fullPage: true
   });
+});
+
+test("기존 대문자 카테고리 URL은 lowercase slug로 정리된다", async ({ page }, testInfo) => {
+  await useFreshClientId(page, `playwright-legacy-${Date.now()}-${testInfo.workerIndex}`);
+
+  await page.goto("/categories/POLITICS");
+  await expect(page.getByRole("heading", { name: "정치 최신뉴스", exact: true })).toBeVisible();
+  await expect(page).toHaveURL(/\/categories\/politics$/);
 });

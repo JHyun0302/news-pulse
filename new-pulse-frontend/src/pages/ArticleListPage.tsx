@@ -1,18 +1,32 @@
-import { ArrowLeft, RefreshCw } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
+import { useEffect } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArticleListItem } from "../components/ArticleListItem";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { LoadingBlock } from "../components/LoadingBlock";
 import { useArticlesQuery } from "../hooks/useArticles";
 import { useClientId } from "../hooks/useClientId";
-import { getCategoryLabel, isCategoryCode } from "../utils/category";
+import type { CategoryCode } from "../types/api";
+import {
+  getCategoryCodeFromSlug,
+  getCategoryLabel,
+  getCategorySlug,
+  isCanonicalCategorySlug
+} from "../utils/category";
 
 export function ArticleListPage() {
-  const { categoryCode } = useParams();
-  const clientId = useClientId();
+  const { categorySlug } = useParams();
+  const navigate = useNavigate();
+  const categoryCode = getCategoryCodeFromSlug(categorySlug);
 
-  if (!isCategoryCode(categoryCode)) {
+  useEffect(() => {
+    if (categoryCode && !isCanonicalCategorySlug(categorySlug, categoryCode)) {
+      navigate(`/categories/${getCategorySlug(categoryCode)}`, { replace: true });
+    }
+  }, [categoryCode, categorySlug, navigate]);
+
+  if (!categoryCode) {
     return (
       <ErrorState
         title="알 수 없는 카테고리"
@@ -21,6 +35,15 @@ export function ArticleListPage() {
     );
   }
 
+  return <ArticleListContent categoryCode={categoryCode} />;
+}
+
+interface ArticleListContentProps {
+  categoryCode: CategoryCode;
+}
+
+function ArticleListContent({ categoryCode }: ArticleListContentProps) {
+  const clientId = useClientId();
   const articlesQuery = useArticlesQuery(categoryCode, clientId);
   const pages = articlesQuery.data?.pages ?? [];
   const articles = pages.flatMap((page) => page.items);
@@ -49,15 +72,6 @@ export function ArticleListPage() {
             </p>
           ) : null}
         </div>
-        <button
-          type="button"
-          onClick={() => void articlesQuery.refetch()}
-          disabled={articlesQuery.isFetching && !articlesQuery.isFetchingNextPage}
-          className="inline-flex h-9 items-center justify-center gap-2 border border-[#c7cdd6] bg-white px-3 text-sm font-semibold text-[#374151] hover:border-[#b42318] hover:text-[#b42318] sm:self-auto"
-        >
-          <RefreshCw aria-hidden="true" size={16} />
-          새로고침
-        </button>
       </div>
 
       {articlesQuery.isPending ? <LoadingBlock label="기사 목록을 불러오는 중" /> : null}

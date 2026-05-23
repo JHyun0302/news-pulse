@@ -66,14 +66,34 @@ describe("ArticleListPage", () => {
     );
 
     renderWithProviders(<ArticleListPage />, {
-      route: "/categories/POLITICS",
-      path: "/categories/:categoryCode"
+      route: "/categories/politics",
+      path: "/categories/:categorySlug"
     });
 
     expect(await screen.findByRole("heading", { name: "정치 최신뉴스" })).toBeInTheDocument();
     expect(await screen.findByRole("link", { name: /정치 기사/ })).toBeInTheDocument();
     expect(screen.getByText("전체 2건 중 1건 표시")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "더보기" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "새로고침" })).not.toBeInTheDocument();
+  });
+
+  it("기존 대문자 enum URL도 기사 목록을 표시한다", async () => {
+    const fetchMock = vi.fn(async () =>
+      Response.json(
+        articlesResponse({
+          items: [article("AKR20260518104500055", "정치 기사")]
+        })
+      )
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    renderWithProviders(<ArticleListPage />, {
+      route: "/categories/POLITICS",
+      path: "/categories/:categorySlug"
+    });
+
+    expect(await screen.findByRole("heading", { name: "정치 최신뉴스" })).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("category=POLITICS"), expect.any(Object));
   });
 
   it("더보기 클릭 시 다음 page 기사를 이어서 표시한다", async () => {
@@ -107,8 +127,8 @@ describe("ArticleListPage", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     renderWithProviders(<ArticleListPage />, {
-      route: "/categories/POLITICS",
-      path: "/categories/:categoryCode"
+      route: "/categories/politics",
+      path: "/categories/:categorySlug"
     });
 
     expect(await screen.findByRole("link", { name: /첫 번째 정치 기사/ })).toBeInTheDocument();
@@ -138,8 +158,8 @@ describe("ArticleListPage", () => {
     );
 
     renderWithProviders(<ArticleListPage />, {
-      route: "/categories/POLITICS",
-      path: "/categories/:categoryCode"
+      route: "/categories/politics",
+      path: "/categories/:categorySlug"
     });
 
     expect(await screen.findByRole("link", { name: /정치 기사/ })).toBeInTheDocument();
@@ -161,8 +181,8 @@ describe("ArticleListPage", () => {
     );
 
     renderWithProviders(<ArticleListPage />, {
-      route: "/categories/POLITICS",
-      path: "/categories/:categoryCode"
+      route: "/categories/politics",
+      path: "/categories/:categorySlug"
     });
 
     expect(await screen.findByText("표시할 기사가 없습니다")).toBeInTheDocument();
@@ -170,8 +190,8 @@ describe("ArticleListPage", () => {
 
   it("잘못된 카테고리 코드를 거부한다", () => {
     renderWithProviders(<ArticleListPage />, {
-      route: "/categories/UNKNOWN",
-      path: "/categories/:categoryCode"
+      route: "/categories/unknown",
+      path: "/categories/:categorySlug"
     });
 
     expect(screen.getByText("알 수 없는 카테고리")).toBeInTheDocument();

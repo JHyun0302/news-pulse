@@ -38,7 +38,9 @@ RUN mkdir -p /app/data /app/lib \
     && chown -R app:app /app
 
 COPY --from=build /workspace/target/*.jar /app/app.jar
-COPY --from=build --chown=app:app --chmod=0755 /workspace/sqlite-native/libsqlitejdbc.so /app/lib/libsqlitejdbc.so
+COPY --from=build /workspace/sqlite-native/libsqlitejdbc.so /app/lib/libsqlitejdbc.so
+RUN chown app:app /app/lib/libsqlitejdbc.so \
+    && chmod 0755 /app/lib/libsqlitejdbc.so
 
 ENV SPRING_PROFILES_ACTIVE=prod \
     NEWS_PULSE_DB_PATH=/app/data/news-pulse.sqlite \

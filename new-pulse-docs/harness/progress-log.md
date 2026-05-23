@@ -1044,3 +1044,57 @@ Slug 라우팅:
 - `/api/categories?clientId=...` 기준 `INDUSTRY.articleCount=129`이나 `/categories/industry` UI는 `전체 50건 중 50건 표시`로 렌더링되고 `더보기` 버튼이 없음
 - `/api/articles?category=INDUSTRY&clientId=...&limit=50&offset=0` 응답에도 `page` 메타가 없어 로컬 최신 API contract와 OCI 배포 상태가 불일치
 - 분류: OCI 배포 버전 불일치 또는 backend/frontend paging 반영 누락
+
+## 2026-05-23 OCI backend 페이징 재배포 QA
+
+세션:
+
+- infra
+- backend
+- test-qa
+
+대상:
+
+- `http://138.2.43.7`
+
+API 검증:
+
+- `GET /api/health`: `status=UP`, `database=UP`
+- `GET /api/categories?clientId=qa-oci-paging`: 50건 초과 카테고리 확인
+  - `POLITICS=172`
+  - `INDUSTRY=129`
+  - `SOCIETY=155`
+- `GET /api/articles?category=INDUSTRY&clientId=qa-oci-paging&limit=50&offset=0`
+  - `items=50`
+  - `page.totalCount=129`
+  - `page.limit=50`
+  - `page.offset=0`
+  - `page.hasNext=true`
+  - `page.nextOffset=50`
+- `GET /api/articles?category=INDUSTRY&clientId=qa-oci-paging&limit=50&offset=50`
+  - `items=50`
+  - `page.totalCount=129`
+  - `page.limit=50`
+  - `page.offset=50`
+  - `page.hasNext=true`
+  - `page.nextOffset=100`
+
+브라우저 QA:
+
+- `/categories/industry` 직접 접근 정상
+- 초기 목록: `전체 129건 중 50건 표시`
+- `더보기` 버튼 표시 정상
+- `더보기` 클릭 후 `전체 129건 중 100건 표시`
+- 더보기 후 article row 수: 100
+- 중복 article id: 0
+- 상세 진입 후 읽음 처리 정상
+- `목록으로` 클릭 시 `/categories/industry` 목록 복귀 및 동일 article row `읽음` 반영 확인
+- `연합뉴스 원문 보기`: 새 탭, `target="_blank"`, `https://www.yna.co.kr/view/...` 확인
+- `/categories/INDUSTRY` 접근 시 `/categories/industry`로 정규화 확인
+- Chrome channel console error: desktop 0건, mobile 0건
+- Mobile viewport `390x844`: horizontal overflow 0px, 더보기 후 100건 표시 확인
+
+결함 해결 판단:
+
+- 이전 OCI 더보기 페이징 결함 해결 확인
+- API page 메타와 UI 더보기 동작이 로컬 최신 contract와 일치

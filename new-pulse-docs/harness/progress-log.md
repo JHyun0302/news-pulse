@@ -656,6 +656,78 @@ Browser QA:
 - frontend 결함 없음
 - 문서 결함 없음
 
+## 2026-05-23 OCI 배포 후 최종 QA
+
+세션:
+
+- infra
+- test-qa
+
+전제:
+
+- OCI edge public URL: `http://138.2.43.7`
+- QA 기준은 로컬 Docker가 아니라 OCI edge public URL
+
+브랜치 확인:
+
+- `git pull origin feature/m1-m8-implementation`: `Already up to date`
+- `git status --short --branch`: `feature/m1-m8-implementation...origin/feature/m1-m8-implementation`
+
+로컬 회귀 테스트:
+
+- Backend `./mvnw test`: 통과, 16 tests
+- Frontend `npm test`: 통과, 18 tests
+- Frontend `npm run build`: 통과
+
+OCI smoke QA:
+
+- `GET http://138.2.43.7/`: `200 OK`
+- `GET http://138.2.43.7/api/health`: `UP`, database `UP`
+- `GET http://138.2.43.7/api/categories?clientId=qa-oci-curl`: 5개 카테고리 응답 확인
+  - `POLITICS`: 131
+  - `NORTH_KOREA`: 82
+  - `ECONOMY`: 120
+  - `INDUSTRY`: 121
+  - `SOCIETY`: 126
+- `GET http://138.2.43.7/api/articles?category=POLITICS&clientId=qa-oci-api&limit=2`: 계약 shape 확인
+- `GET http://138.2.43.7/api/articles/AKR20260523033100053?clientId=qa-oci-api`: 상세 계약 shape 확인
+
+Admin/API 확인:
+
+- public edge에서 `/api/admin/**`는 nginx `404` 반환
+- `deploy/edge/nginx.conf`의 `location ^~ /api/admin/ { return 404; }` 정책과 일치
+- 따라서 public edge 기준으로 RSS collect, push dispatch, push histories shape는 실행/확인하지 않음
+- 공개 edge에서 admin API까지 제출 검증 대상이면 infra 정책 변경이 필요하다. 현재 설계 기준으로는 보안 차단 정상 동작으로 판단한다.
+
+Browser QA:
+
+- Chrome 직접 QA 통과
+- 확인 흐름: 상단 카테고리 nav -> 5개 카테고리 현황 -> 정치 최신뉴스 목록 -> 상세 -> `연합뉴스 원문 보기` 새 탭 -> 목록 복귀 읽음 반영
+- 검증 article id: `AKR20260523033100053`
+- Chrome console error: 0건
+- Desktop overflow: 0
+
+Mobile QA:
+
+- Playwright `channel: chrome`, viewport `390x844`
+- 확인 화면: category overview, politics list, article detail
+- `documentElement.scrollWidth`와 `body.scrollWidth` 모두 viewport width 이하
+- 모바일 overflow: 0
+- console error: 0건
+
+README/산출물 확인:
+
+- README의 DB/CSV 산출물은 로컬 제출 검증용 SQLite/CSV 경로로 설명되어 있으며, OCI runtime DB count와 동일해야 한다고 설명하지 않음
+- 기능 설명과 실제 OCI 동작 사이 불일치 없음
+- OCI 화면은 현재 README 스크린샷과 동일한 UI 구조라 README용 스크린샷은 갱신하지 않음
+
+결함 판단:
+
+- 사용자 화면 기능 결함 없음
+- backend API 공개 기능 결함 없음
+- Chrome/mobile UI 결함 없음
+- public edge admin API는 보안 정책상 차단되어 push histories shape는 public edge에서 미검증
+
 ## 2026-05-23 원문 링크와 푸시 설계 설명 보강
 
 세션:

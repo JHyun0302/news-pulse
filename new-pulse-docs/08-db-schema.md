@@ -10,6 +10,70 @@ SQLite schema는 명시적인 `schema.sql`로 관리한다. 이 문서는 테이
 - 푸시 발송 이력은 append-only로 저장한다.
 - 중복 기사와 중복 발송은 DB unique 제약으로도 방어한다.
 
+## ERD
+
+```mermaid
+erDiagram
+  articles {
+    TEXT article_id PK
+    TEXT title
+    TEXT link UK
+    TEXT creator
+    TEXT published_at
+    TEXT created_at
+  }
+
+  article_categories {
+    TEXT article_id PK, FK
+    TEXT category PK
+  }
+
+  users {
+    INTEGER user_no PK
+    TEXT name
+    TEXT device_id
+    TEXT push_type
+    TEXT dnd_start
+    TEXT dnd_end
+  }
+
+  user_preferences {
+    INTEGER user_no PK, FK
+    TEXT category PK
+  }
+
+  push_histories {
+    INTEGER id PK
+    INTEGER user_no FK
+    TEXT device_id
+    TEXT push_type
+    TEXT article_id FK
+    TEXT title
+    TEXT category
+    TEXT sent_at
+    TEXT status
+  }
+
+  article_read_states {
+    TEXT client_id PK
+    TEXT article_id PK, FK
+    TEXT read_at
+  }
+
+  articles ||--o{ article_categories : 카테고리매핑
+  users ||--o{ user_preferences : 선호카테고리
+  users ||--o{ push_histories : 발송대상
+  articles ||--o{ push_histories : 발송기사
+  articles ||--o{ article_read_states : 읽음상태
+```
+
+핵심 관계:
+
+- `articles`와 `article_categories`는 다대다 기사-카테고리 구조를 만든다. 같은 기사가 여러 카테고리에 나타날 수 있어 매핑 테이블로 분리했다.
+- `users`와 `user_preferences`는 푸시 대상 사용자의 선호 카테고리를 저장한다.
+- `push_histories`는 사용자-기사 발송 이력이며, `UNIQUE(user_no, article_id)`로 같은 사용자에게 같은 기사가 중복 발송되는 것을 방지한다.
+- `article_read_states`는 웹 읽음 상태이며, 푸시 대상자인 `users`와 분리된다. 웹은 로그인 없이 브라우저 `client_id`와 `article_id` 조합으로 읽음 상태를 저장한다.
+
 ## Tables
 
 ```sql

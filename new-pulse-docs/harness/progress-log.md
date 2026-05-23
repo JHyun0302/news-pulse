@@ -977,3 +977,31 @@ Slug 라우팅 검증:
 - frontend slug 라우팅 결함 없음
 - Docker/proxy 결함 없음
 - 모바일 레이아웃 결함 없음
+
+## 2026-05-23 카테고리 slug URL 문서 반영
+
+세션:
+
+- docs
+
+검색 결과:
+
+- `rg '/categories/[A-Z]'` 결과, progress-log의 legacy 대문자 URL 호환 QA 기록만 존재
+- README, Frontend Design, API Contract의 canonical 화면 URL 설명은 lowercase/kebab-case slug 기준
+- Frontend Design에 `새로고침 버튼` 문구가 남아 있어 최신 UI 기준으로 제거
+
+반영:
+
+- README에 화면 URL은 `/categories/industry`, `/categories/north-korea` 같은 lowercase/kebab-case slug를 사용한다고 기록
+- API 요청은 기존 enum code를 유지하므로 화면 URL `/categories/industry`에서도 `category=INDUSTRY`를 호출한다고 기록
+- 기존 대문자 enum URL은 호환하되 canonical lowercase slug로 정리된다고 기록
+- API Contract와 Frontend Design에 화면 slug와 API enum code의 경계를 명확히 기록
+- Acceptance Matrix의 카테고리 리스트 검증 항목에 slug URL 흐름 반영
+
+검증:
+
+- `git diff --check`: 통과
+- README 이미지/문서 링크 확인: 24개 local target 존재 확인
+- 공개 수위 `rg` 점검: 원본 과제 문서/제출 안내 원문/개인정보성 문구 노출 없음
+- README와 Frontend Design에서 `새로고침`/`refresh` 문구 없음
+- `/categories/[A-Z]` 검색: progress-log legacy redirect QA 기록 1건만 존재

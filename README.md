@@ -150,6 +150,8 @@ npx playwright test
 
 Base path는 `/api`입니다.
 
+화면 라우팅은 lowercase slug를 사용합니다. 예를 들어 산업 카테고리 화면 URL은 `/categories/industry`이고, 북한 카테고리는 kebab-case인 `/categories/north-korea`입니다. API 요청은 기존 enum code를 유지하므로 같은 화면에서도 기사 목록 API는 `category=INDUSTRY`, `category=NORTH_KOREA`처럼 호출합니다. 기존 대문자 enum URL로 접근해도 호환 처리 후 canonical lowercase slug로 정리됩니다.
+
 | Method | Path | 설명 |
 | --- | --- | --- |
 | `GET` | `/api/health` | 애플리케이션과 DB 상태 확인 |
@@ -315,6 +317,7 @@ docker build -f new-pulse-frontend/Dockerfile -t news-pulse-frontend:latest .
 - RSS `guid`는 사용하지 않고, link URL 마지막 path segment에서 `article_id`를 추출합니다.
 - 같은 기사가 여러 카테고리에 나타날 수 있어 기사와 카테고리 매핑을 분리했습니다.
 - 카테고리 현황은 저장된 전체 기사 수를 보여주고, 목록은 최신순으로 50건씩 가져오며 `더보기`로 전체 기사에 접근합니다. 검색/정렬은 과제 요구 범위를 넘기므로 제외하고 최신순 읽기 흐름에 집중했습니다.
+- 화면 URL은 `/categories/industry`, `/categories/north-korea`처럼 사람이 읽기 쉬운 lowercase slug를 사용하고, 백엔드 API는 기존 enum code(`INDUSTRY`, `NORTH_KOREA`)를 유지해 계약 안정성을 지켰습니다.
 - 뉴스 열람 앱은 기사 메타데이터와 읽음 상태를 관리하고 본문 소비는 원 출처로 연결합니다. 본문 수집/저장은 저작권, 출처 표기, 최신성, 삭제/수정 반영, HTML sanitizing, 이미지/동영상 자산 처리 문제가 생기고, iframe은 언론사 CSP/X-Frame-Options 정책으로 막힐 수 있어 새 탭 방식을 선택했습니다.
 - DND 시간대에 해당하는 사용자는 해당 발송에서 제외합니다. 보류 큐는 과제 범위 밖으로 두었습니다.
 - APNS/FCM은 실제 외부 연동 없이 `success` 또는 `fail` 결과를 시뮬레이션하고 DB에 저장합니다. 실패 재시도 큐는 과제 범위를 넓히므로 구현하지 않고, 실패도 검증 가능한 이력으로 남깁니다.

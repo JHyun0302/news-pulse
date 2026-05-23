@@ -54,7 +54,7 @@ docker compose -f docker-compose.local.yml -p news-pulse up --build
 
 | 평가 항목 | 충족 여부 | 증거 파일 | 검증 명령/기록 |
 | --- | --- | --- | --- |
-| 카테고리 선택, 기사 리스트, 본문 링크, 읽음 상태 표시 | 충족 | `new-pulse-frontend/src/pages/**`, `screenshots/*.png`, `README.md` | `cd new-pulse-frontend && npm test`, `npx playwright test`, Chrome QA |
+| 카테고리 선택, slug URL 기사 리스트, 본문 링크, 읽음 상태 표시 | 충족 | `new-pulse-frontend/src/pages/**`, `new-pulse-frontend/src/utils/category.ts`, `screenshots/*.png`, `README.md` | `cd new-pulse-frontend && npm test`, `npx playwright test`, Chrome QA |
 | UI/UX 품질과 일관성 | 충족 | `new-pulse-frontend/src/components/**`, `new-pulse-frontend/src/styles.css`, `screenshots/category-overview.png` | Chrome desktop QA, Playwright 390px mobile overflow check |
 | 코드 품질, 구조, 유지보수성 | 충족 | `new-pulse-docs/02-architecture.md`, `new-pulse-docs/03-backend-design.md`, `new-pulse-docs/04-frontend-design.md` | backend/frontend test와 build 통과, 기능형 패키지와 컴포넌트 분리 확인 |
 | RSS 수집과 기사 저장 | 충족 | `new-pulse-backend/src/main/java/com/newpulse/article/**`, `new-pulse-backend/deliverables/articles.csv` | `cd new-pulse-backend && ./mvnw test`, 수동 RSS collect QA 기록 |

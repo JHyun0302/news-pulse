@@ -8,6 +8,7 @@
 - Response content type: `application/json`
 - Time format: ISO-8601 string, timezone은 서버 기준 `Asia/Seoul`
 - Category code는 영문 enum을 사용하고 화면 표시명은 응답에 함께 제공한다.
+- 화면 route는 `/categories/industry`, `/categories/north-korea` 같은 lowercase slug를 사용하지만, API query와 response는 기존 enum code(`INDUSTRY`, `NORTH_KOREA`)를 유지한다.
 - 로그인은 없다. 읽음 상태는 `clientId` query 또는 body 값으로 식별한다.
 - Error response는 동일한 shape를 사용한다.
 

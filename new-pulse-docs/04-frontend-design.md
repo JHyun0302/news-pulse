@@ -18,11 +18,13 @@
 
 ```mermaid
 flowchart TD
-  Categories["/ - category overview"] --> List["/categories/:category - article list"]
+  Categories["/ - category overview"] --> List["/categories/:categorySlug - article list"]
   List --> Detail["/articles/:articleId - article detail"]
   Detail --> External["open original article in new tab"]
   Detail --> List
 ```
+
+화면 route의 카테고리 식별자는 lowercase slug를 사용한다. 예를 들어 산업은 `/categories/industry`, 북한은 `/categories/north-korea`로 접근한다. API 계약은 기존 enum code를 유지하므로 화면 URL이 `/categories/industry`여도 기사 목록 API는 `category=INDUSTRY`로 호출한다. 기존 enum code 기반 대문자 URL도 호환하되, 화면에서는 canonical lowercase slug로 replace navigation한다.
 
 ## 화면 구성
 
@@ -32,7 +34,7 @@ flowchart TD
    - 첫 화면은 마케팅 랜딩이 아니라 실제 사용 화면으로 구성한다.
 
 2. 기사 리스트 화면
-   - 선택 카테고리명, 새로고침 버튼, 기사 목록을 표시한다.
+   - 선택 카테고리명과 기사 목록을 표시한다.
    - 목록은 최신순으로 50건씩 가져오고, `더보기` 버튼으로 다음 offset을 이어서 불러온다.
    - 상단에는 `전체 N건 중 M건 표시` 형태로 현재 표시 범위를 보여준다.
    - 카테고리 현황의 기사 수는 저장된 전체 기사 수이며, 리스트의 표시 건수는 현재 로드한 page 누적 건수다.

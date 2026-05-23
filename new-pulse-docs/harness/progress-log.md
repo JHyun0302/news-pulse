@@ -888,3 +888,23 @@ Mobile QA:
 - frontend 결함 없음
 - Docker/proxy 결함 없음
 - 모바일 레이아웃 결함 없음
+
+## 2026-05-23 기사 목록 페이징 문서 반영
+
+세션:
+
+- docs
+
+반영:
+
+- README 핵심 기능, 주요 API, 주요 설계 판단에 기사 목록 50건 단위 더보기 페이징을 반영
+- README 스크린샷 섹션에 `screenshots/pagination-after-more-read-state.png` 추가
+- API Contract `/api/articles`에 `limit`, `offset`, `page.totalCount`, `page.hasNext`, `page.nextOffset` 의미를 명확히 기록
+- Frontend Design에 카테고리 현황의 전체 기사 수와 목록 표시 건수의 차이, 더보기형 페이징 설계 이유 기록
+- Architecture 설계 결정 이유에 검색/정렬을 제외하고 최신순+더보기 흐름에 집중한 판단 기록
+
+검증:
+
+- `git diff --check`: 통과
+- README 이미지/문서 링크 확인: 24개 local target 존재 확인
+- 공개 수위 `rg` 점검: 원본 과제 문서/제출 안내 원문/개인정보성 문구 노출 없음

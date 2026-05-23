@@ -29,13 +29,17 @@ public class ArticleController {
     ArticleListResponse articles(
             @RequestParam String category,
             @RequestParam(required = false) String clientId,
-            @RequestParam(required = false) Integer limit
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) Integer offset
     ) {
-        NewsCategory newsCategory = NewsCategory.fromCode(category);
-        List<ArticleResponse> items = articleService.articlesByCategory(category, clientId, limit).stream()
+        ArticlePage page = articleService.articlesByCategory(category, clientId, limit, offset);
+        List<ArticleResponse> items = page.articles().stream()
                 .map(ArticleResponse::from)
                 .toList();
-        return new ArticleListResponse(CategoryResponse.from(newsCategory), items);
+        return new ArticleListResponse(
+                CategoryResponse.from(page.category()),
+                items,
+                PageResponse.from(page.page()));
     }
 
     @GetMapping("/{articleId}")
@@ -49,7 +53,7 @@ public class ArticleController {
         return new ReadResponse(state.articleId(), state.clientId(), state.read(), state.readAt());
     }
 
-    record ArticleListResponse(CategoryResponse category, List<ArticleResponse> items) {
+    record ArticleListResponse(CategoryResponse category, List<ArticleResponse> items, PageResponse page) {
     }
 
     record CategoryResponse(String code, String name) {
@@ -83,5 +87,16 @@ public class ArticleController {
     }
 
     record ReadResponse(String articleId, String clientId, boolean read, OffsetDateTime readAt) {
+    }
+
+    record PageResponse(int totalCount, int limit, int offset, boolean hasNext, Integer nextOffset) {
+        static PageResponse from(ArticlePage.Metadata page) {
+            return new PageResponse(
+                    page.totalCount(),
+                    page.limit(),
+                    page.offset(),
+                    page.hasNext(),
+                    page.nextOffset());
+        }
     }
 }

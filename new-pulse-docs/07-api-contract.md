@@ -61,7 +61,7 @@ Query:
 | `category` | 예 | `POLITICS`, `NORTH_KOREA`, `ECONOMY`, `INDUSTRY`, `SOCIETY` |
 | `clientId` | 아니오 | 읽음 여부 계산용 |
 | `limit` | 아니오 | 기본 50, 최대 100 |
-| `cursor` | 아니오 | 이후 확장용. 초기 구현에서는 생략 가능 |
+| `offset` | 아니오 | 기본 0. 음수는 `INVALID_REQUEST` |
 
 Response:
 
@@ -81,7 +81,14 @@ Response:
       "categories": ["POLITICS"],
       "read": false
     }
-  ]
+  ],
+  "page": {
+    "totalCount": 42,
+    "limit": 50,
+    "offset": 0,
+    "hasNext": false,
+    "nextOffset": null
+  }
 }
 ```
 

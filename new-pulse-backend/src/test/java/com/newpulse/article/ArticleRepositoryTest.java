@@ -38,7 +38,7 @@ class ArticleRepositoryTest {
 
         assertThat(result.newArticleCount()).isEqualTo(1);
         assertThat(result.skippedDuplicateCount()).isEqualTo(1);
-        assertThat(articleRepository.findByCategory(NewsCategory.POLITICS, null, 10)).hasSize(1);
+        assertThat(articleRepository.findByCategory(NewsCategory.POLITICS, null, 10, 0)).hasSize(1);
     }
 
     @Test

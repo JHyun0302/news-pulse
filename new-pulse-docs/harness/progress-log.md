@@ -1005,3 +1005,42 @@ Slug 라우팅 검증:
 - 공개 수위 `rg` 점검: 원본 과제 문서/제출 안내 원문/개인정보성 문구 노출 없음
 - README와 Frontend Design에서 `새로고침`/`refresh` 문구 없음
 - `/categories/[A-Z]` 검색: progress-log legacy redirect QA 기록 1건만 존재
+
+## 2026-05-23 OCI slug 라우팅 smoke QA
+
+세션:
+
+- infra
+- frontend
+- test-qa
+
+대상:
+
+- `http://138.2.43.7`
+
+기본 응답:
+
+- `GET /`: `200`, `text/html; charset=utf-8`
+- `GET /api/health`: `status=UP`, `database=UP`
+- `GET /favicon.svg`: `200`, `image/svg+xml`
+
+Slug 라우팅:
+
+- `/categories/industry` 직접 접근 정상
+- `/categories/INDUSTRY` 접근 시 `/categories/industry`로 정규화 확인
+- 상단 nav의 산업 링크가 `/categories/industry` lowercase slug로 이동함을 확인
+
+기능 smoke:
+
+- 상세 진입 후 읽음 처리 정상
+- 상세 화면 `연합뉴스 원문 보기`: 새 탭, `target="_blank"`, `https://www.yna.co.kr/view/...` 확인
+- `목록으로` 클릭 시 `/categories/industry` 목록 복귀 및 동일 article row `읽음` 반영 확인
+- Chrome channel console error: desktop 0건, mobile 0건
+- Mobile viewport `390x844`: horizontal overflow 0px
+
+결함:
+
+- 더보기 페이징은 OCI에서 실패
+- `/api/categories?clientId=...` 기준 `INDUSTRY.articleCount=129`이나 `/categories/industry` UI는 `전체 50건 중 50건 표시`로 렌더링되고 `더보기` 버튼이 없음
+- `/api/articles?category=INDUSTRY&clientId=...&limit=50&offset=0` 응답에도 `page` 메타가 없어 로컬 최신 API contract와 OCI 배포 상태가 불일치
+- 분류: OCI 배포 버전 불일치 또는 backend/frontend paging 반영 누락

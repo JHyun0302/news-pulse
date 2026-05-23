@@ -908,3 +908,72 @@ Mobile QA:
 - `git diff --check`: 통과
 - README 이미지/문서 링크 확인: 24개 local target 존재 확인
 - 공개 수위 `rg` 점검: 원본 과제 문서/제출 안내 원문/개인정보성 문구 노출 없음
+
+## 2026-05-23 카테고리 slug 라우팅 QA
+
+세션:
+
+- frontend
+- test-qa
+
+전제:
+
+- frontend 커밋 `7c659d3 fix: 카테고리 URL slug 정리` 이후 최신 `feature/m1-m8-implementation` 기준 검증
+- QA 기준 URL은 로컬 Docker compose `http://localhost:3000`
+- Backend/API contract 변경 없음
+
+브랜치 확인:
+
+- `git pull origin feature/m1-m8-implementation`: `Already up to date`
+- `git status --short --branch`: `feature/m1-m8-implementation...origin/feature/m1-m8-implementation`
+
+자동 테스트:
+
+- Backend `./mvnw test`: 통과, 20 tests
+- Frontend `npm test`: 통과, 24 tests
+- Frontend `npm run build`: 통과
+- Frontend `npx playwright test`: 통과, 3 tests
+
+Docker local QA:
+
+```bash
+docker compose -f docker-compose.local.yml -p news-pulse up -d --build
+# 성공
+```
+
+- `news-pulse-backend-local`: `healthy`
+- `news-pulse-frontend-local`: `healthy`
+- `http://localhost:3000/healthz`: `ok`
+- `http://localhost:3000/api/health`: `UP`
+- `http://localhost:8080/api/health`: `UP`
+
+Slug 라우팅 검증:
+
+- `/categories/politics`, `/categories/north-korea`, `/categories/economy`, `/categories/industry`, `/categories/society` 직접 접근 정상
+- `/categories/POLITICS` 접근 시 `/categories/politics`로 정규화 확인
+- 상단 nav와 카테고리 현황 링크가 lowercase slug를 사용함을 확인
+- 상세 화면 `목록으로` 클릭 시 `/categories/politics`로 복귀 확인
+
+기능 회귀 검증:
+
+- 정치 목록 초기 표시: `전체 123건 중 50건 표시`
+- `더보기` 클릭 후 `전체 123건 중 100건 표시`
+- 더보기 후 article row 수: 100
+- 중복 article id: 0
+- 상세 진입 후 읽음 처리, 목록 복귀 후 동일 article row `읽음` 반영 확인
+- `연합뉴스 원문 보기`: 새 탭, `target="_blank"`, `https://www.yna.co.kr/view/...` 확인
+- Chrome channel console error: desktop 0건, mobile 0건
+- Mobile viewport `390x844`: horizontal overflow 0px
+
+스크린샷:
+
+- Playwright 재실행으로 최신 UI 기준 갱신:
+  - `screenshots/article-list-read-state.png`
+  - `screenshots/mobile-article-list.png`
+
+결함 판단:
+
+- backend 결함 없음
+- frontend slug 라우팅 결함 없음
+- Docker/proxy 결함 없음
+- 모바일 레이아웃 결함 없음

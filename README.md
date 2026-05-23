@@ -69,6 +69,19 @@ curl -fsS http://localhost:8080/api/health
 
 로컬 compose는 SQLite를 Docker named volume `news-pulse-sqlite`에 저장합니다. 컨테이너를 재생성해도 volume을 삭제하지 않으면 DB 파일은 유지됩니다.
 
+### 첫 실행 후 샘플 데이터 생성
+
+Docker 첫 실행 시 `users.csv` 기반 사용자 seed 100명은 자동 import됩니다. RSS 기사와 푸시 발송 이력은 평가자가 직접 확인할 수 있도록 아래 admin API로 생성할 수 있습니다.
+
+```bash
+curl -X POST http://localhost:8080/api/admin/rss/collect
+curl -X POST http://localhost:8080/api/admin/push/dispatch
+```
+
+- `/api/admin/rss/collect` 실행 후 화면에 카테고리별 기사 목록이 채워집니다.
+- `/api/admin/push/dispatch` 실행 후 `push_histories`에 `success`/`fail` 발송 이력이 저장됩니다.
+- local Docker compose에서는 RSS 자동 스케줄러가 꺼져 있으므로, 첫 실행 확인 시 위 명령을 실행하는 것을 권장합니다.
+
 ## 로컬 실행: Backend Dev
 
 ```bash
@@ -82,11 +95,9 @@ cd new-pulse-backend
 NEWS_PULSE_DB_PATH=/tmp/news-pulse.sqlite ./mvnw spring-boot:run
 ```
 
-수동 수집과 발송:
+수동 수집/발송은 Docker 섹션의 첫 실행 후 샘플 데이터 생성 명령과 동일합니다. 발송 이력은 아래처럼 조회합니다.
 
 ```bash
-curl -sS -X POST http://localhost:8080/api/admin/rss/collect
-curl -sS -X POST http://localhost:8080/api/admin/push/dispatch
 curl -sS "http://localhost:8080/api/admin/push-histories?limit=10"
 ```
 

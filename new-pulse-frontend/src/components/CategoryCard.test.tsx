@@ -19,7 +19,7 @@ describe("CategoryCard", () => {
     );
 
     const link = screen.getByRole("link", { name: "정치 기사 목록 보기" });
-    expect(link).toHaveAttribute("href", "/categories/POLITICS");
+    expect(link).toHaveAttribute("href", "/categories/politics");
     expect(screen.getByText("정치")).toBeInTheDocument();
     expect(screen.getByText("42")).toBeInTheDocument();
     expect(screen.getByText("17")).toBeInTheDocument();

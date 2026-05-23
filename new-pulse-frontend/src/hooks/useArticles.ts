@@ -1,11 +1,25 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchArticle, fetchArticles, markArticleRead } from "../api/articles";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ARTICLE_PAGE_SIZE, fetchArticle, fetchArticles, markArticleRead } from "../api/articles";
 import type { CategoryCode } from "../types/api";
 
 export function useArticlesQuery(category: CategoryCode, clientId: string) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: ["articles", category, clientId],
-    queryFn: () => fetchArticles({ category, clientId })
+    queryFn: ({ pageParam }) =>
+      fetchArticles({
+        category,
+        clientId,
+        limit: ARTICLE_PAGE_SIZE,
+        offset: pageParam
+      }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => {
+      if (!lastPage.page.hasNext) {
+        return undefined;
+      }
+
+      return lastPage.page.nextOffset ?? lastPage.page.offset + lastPage.page.limit;
+    }
   });
 }
 

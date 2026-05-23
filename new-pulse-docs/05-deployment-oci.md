@@ -8,16 +8,29 @@
 
 | VM | 역할 | 외부 노출 | 주요 구성 |
 | --- | --- | --- | --- |
-| edge-vm | 인터넷 진입점, TLS, reverse proxy | 80/443 | Nginx 또는 Caddy |
+| edge-vm | 인터넷 진입점, reverse proxy, TLS termination 대상 | 80, 443은 TLS 구성 시 | Nginx 또는 Caddy |
 | front-vm | React 정적 파일 서빙, `/api` upstream proxy | edge-vm에서만 접근 | Nginx, frontend container |
 | back-vm | Spring Boot API, scheduler, SQLite volume | front-vm에서만 접근 | backend container, SQLite data volume |
+
+## M8 실제 배포 결과
+
+- 배포 확인 URL: `http://138.2.43.7`
+- 현재 배포는 HTTP public IP 기준이다. TLS 인증서와 도메인은 구성하지 않았다.
+- edge-vm은 public 80 포트 진입점과 reverse proxy를 담당한다.
+- front-vm은 React 정적 파일 서빙과 `/api` upstream proxy를 담당한다.
+- back-vm은 Spring Boot API, RSS scheduler, SQLite volume을 담당한다.
+- public edge에서 `/api/admin/**`는 Nginx가 `404`로 차단한다. 운영성 admin API는 SSH/VPN/internal 접근으로만 확인하는 정책이다.
+- SQLite 운영 경로는 back-vm host 기준 `/opt/news-pulse/data/news-pulse.sqlite`, 컨테이너 기준 `/app/data/news-pulse.sqlite`다.
+- favicon은 `/favicon.svg`로 배포되어 edge URL에서 `200 OK`, `image/svg+xml` 응답을 확인했다.
+- public IP와 private IP를 README 또는 공개 문서에 어디까지 노출할지는 PM 최종 판단 항목이다. 현재 문서는 제출 확인에 필요한 edge public URL만 기록하고, front/back private IP는 기록하지 않는다.
+- 남은 운영 리스크는 TLS/도메인 미구성이다. 실제 장기 운영 전에는 edge-vm에 도메인 연결과 TLS termination을 추가해야 한다.
 
 ## 아키텍처 다이어그램
 
 ```mermaid
 flowchart LR
   User["User Browser / Chrome QA"] --> Internet["Internet"]
-  Internet --> Edge["edge-vm\nTLS termination\nReverse proxy"]
+  Internet --> Edge["edge-vm\nReverse proxy\nTLS termination target"]
   Edge --> Front["front-vm\nNginx static frontend\n/api proxy"]
   Front --> Back["back-vm\nSpring Boot API\nRSS scheduler"]
   Back --> SQLite[("SQLite\n/app/data/news-pulse.sqlite")]
@@ -38,6 +51,7 @@ flowchart LR
 - back-vm은 front-vm에서 오는 backend port만 허용한다.
 - back-vm outbound는 RSS 수집을 위해 HTTPS를 허용한다.
 - SQLite 파일은 back-vm host volume에만 둔다.
+- public edge에서는 `/api/admin/**`를 차단한다. 수동 RSS collect, push dispatch, push history 조회 같은 운영성 API는 내부망 또는 SSH 터널 기준으로만 접근한다.
 
 ## 컨테이너 구성
 

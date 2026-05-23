@@ -34,9 +34,18 @@ export interface ArticleSummary {
   read: boolean;
 }
 
+export interface ArticlePageMetadata {
+  totalCount: number;
+  limit: number;
+  offset: number;
+  hasNext: boolean;
+  nextOffset: number | null;
+}
+
 export interface ArticlesResponse {
   category: CategoryRef;
   items: ArticleSummary[];
+  page: ArticlePageMetadata;
 }
 
 export type ArticleDetail = ArticleSummary;

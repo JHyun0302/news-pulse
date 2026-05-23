@@ -66,10 +66,18 @@ public class ArticleService {
         return articleRepository.categorySummaries(clientId);
     }
 
-    public List<Article> articlesByCategory(String categoryCode, String clientId, Integer limit) {
+    public ArticlePage articlesByCategory(String categoryCode, String clientId, Integer limit, Integer offset) {
         NewsCategory category = NewsCategory.fromCode(categoryCode);
         int normalizedLimit = normalizeLimit(limit, 50, 100);
-        return articleRepository.findByCategory(category, clientId, normalizedLimit);
+        int normalizedOffset = normalizeOffset(offset);
+        int totalCount = articleRepository.countByCategory(category);
+        List<Article> articles = articleRepository.findByCategory(category, clientId, normalizedLimit, normalizedOffset);
+        boolean hasNext = normalizedOffset + articles.size() < totalCount;
+        Integer nextOffset = hasNext ? normalizedOffset + normalizedLimit : null;
+        return new ArticlePage(
+                category,
+                articles,
+                new ArticlePage.Metadata(totalCount, normalizedLimit, normalizedOffset, hasNext, nextOffset));
     }
 
     public Article articleDetail(String articleId, String clientId) {
@@ -89,5 +97,15 @@ public class ArticleService {
             throw new IllegalArgumentException("limit must be positive");
         }
         return Math.min(requested, maxLimit);
+    }
+
+    private int normalizeOffset(Integer requested) {
+        if (requested == null) {
+            return 0;
+        }
+        if (requested < 0) {
+            throw new IllegalArgumentException("offset must be zero or positive");
+        }
+        return requested;
     }
 }

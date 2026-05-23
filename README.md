@@ -6,7 +6,7 @@
 
 - 정치, 북한, 경제, 산업, 사회 RSS 피드 수집
 - 기사 `article_id` 기준 중복 제거와 최대 1,000건 저장
-- 카테고리별 기사 목록, 기사 상세, 원문 새 탭 열기
+- 카테고리별 최신순 기사 목록, 50건 단위 더보기, 기사 상세, 원문 새 탭 열기
 - 브라우저 익명 `client_id` 기준 읽음 상태 저장
 - 사용자 선호 카테고리와 DND 시간대 기반 푸시 대상 선별
 - APNS/FCM 발송 시뮬레이션과 발송 이력 SQLite 저장
@@ -138,8 +138,8 @@ npx playwright test
 
 최종 QA 기록:
 
-- Backend test: 16 tests 통과
-- Frontend test: 16 tests 통과
+- Backend test: 20 tests 통과
+- Frontend test: 20 tests 통과
 - Frontend build 통과
 - Playwright: 2 tests 통과
 - Docker Compose local: backend/frontend `healthy`
@@ -150,11 +150,13 @@ npx playwright test
 
 Base path는 `/api`입니다.
 
+화면 라우팅은 lowercase slug를 사용합니다. 예를 들어 산업 카테고리 화면 URL은 `/categories/industry`이고, 북한 카테고리는 kebab-case인 `/categories/north-korea`입니다. API 요청은 기존 enum code를 유지하므로 같은 화면에서도 기사 목록 API는 `category=INDUSTRY`, `category=NORTH_KOREA`처럼 호출합니다. 기존 대문자 enum URL로 접근해도 호환 처리 후 canonical lowercase slug로 정리됩니다.
+
 | Method | Path | 설명 |
 | --- | --- | --- |
 | `GET` | `/api/health` | 애플리케이션과 DB 상태 확인 |
 | `GET` | `/api/categories?clientId=...` | 5개 카테고리와 기사/미읽음 수 |
-| `GET` | `/api/articles?category=POLITICS&clientId=...` | 카테고리별 기사 목록 |
+| `GET` | `/api/articles?category=POLITICS&clientId=...&limit=50&offset=0` | 카테고리별 최신순 기사 목록과 page metadata |
 | `GET` | `/api/articles/{articleId}?clientId=...` | 기사 상세 메타데이터 |
 | `POST` | `/api/articles/{articleId}/read` | `client_id + article_id` 기준 읽음 처리 |
 | `POST` | `/api/admin/rss/collect` | RSS 수동 수집 |
@@ -259,6 +261,10 @@ sqlite3 new-pulse-backend/deliverables/news-pulse-qa.sqlite \
 
 ![Article list read state](screenshots/article-list-read-state.png)
 
+### 더보기 후 기사 목록
+
+![Article list after pagination](screenshots/pagination-after-more-read-state.png)
+
 ### 기사 상세
 
 ![Article detail](screenshots/article-detail.png)
@@ -298,6 +304,11 @@ docker build -f new-pulse-frontend/Dockerfile -t news-pulse-frontend:latest .
 
 자세한 배포 절차는 [OCI Deployment](new-pulse-docs/05-deployment-oci.md)를 참고합니다.
 
+배포 확인 URL:
+
+- [http://138.2.43.7](http://138.2.43.7)
+- 현재는 HTTP public IP로 확인하는 제출용 배포입니다. TLS와 도메인은 구성하지 않았습니다.
+
 ## 주요 설계 판단
 
 - 로그인, JWT, 세션, Redis는 구현하지 않았습니다.
@@ -305,6 +316,8 @@ docker build -f new-pulse-frontend/Dockerfile -t news-pulse-frontend:latest .
 - 제공 사용자 데이터는 웹 로그인 사용자가 아니라 푸시 발송 대상자 seed로만 사용합니다.
 - RSS `guid`는 사용하지 않고, link URL 마지막 path segment에서 `article_id`를 추출합니다.
 - 같은 기사가 여러 카테고리에 나타날 수 있어 기사와 카테고리 매핑을 분리했습니다.
+- 카테고리 현황은 저장된 전체 기사 수를 보여주고, 목록은 최신순으로 50건씩 가져오며 `더보기`로 전체 기사에 접근합니다. 검색/정렬은 과제 요구 범위를 넘기므로 제외하고 최신순 읽기 흐름에 집중했습니다.
+- 화면 URL은 `/categories/industry`, `/categories/north-korea`처럼 사람이 읽기 쉬운 lowercase slug를 사용하고, 백엔드 API는 기존 enum code(`INDUSTRY`, `NORTH_KOREA`)를 유지해 계약 안정성을 지켰습니다.
 - 뉴스 열람 앱은 기사 메타데이터와 읽음 상태를 관리하고 본문 소비는 원 출처로 연결합니다. 본문 수집/저장은 저작권, 출처 표기, 최신성, 삭제/수정 반영, HTML sanitizing, 이미지/동영상 자산 처리 문제가 생기고, iframe은 언론사 CSP/X-Frame-Options 정책으로 막힐 수 있어 새 탭 방식을 선택했습니다.
 - DND 시간대에 해당하는 사용자는 해당 발송에서 제외합니다. 보류 큐는 과제 범위 밖으로 두었습니다.
 - APNS/FCM은 실제 외부 연동 없이 `success` 또는 `fail` 결과를 시뮬레이션하고 DB에 저장합니다. 실패 재시도 큐는 과제 범위를 넓히므로 구현하지 않고, 실패도 검증 가능한 이력으로 남깁니다.

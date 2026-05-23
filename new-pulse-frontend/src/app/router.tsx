@@ -14,7 +14,7 @@ export const router = createBrowserRouter([
         element: <CategoryOverviewPage />
       },
       {
-        path: "categories/:categoryCode",
+        path: "categories/:categorySlug",
         element: <ArticleListPage />
       },
       {

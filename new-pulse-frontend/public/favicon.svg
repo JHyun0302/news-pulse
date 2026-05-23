@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="News Pulse">
+  <rect width="64" height="64" rx="12" fill="#111827" />
+  <rect x="12" y="10" width="8" height="44" rx="3" fill="#b42318" />
+  <path
+    d="M28 18h18M28 28h24M28 38h18M28 48h12"
+    fill="none"
+    stroke="#ffffff"
+    stroke-linecap="round"
+    stroke-width="5"
+  />
+</svg>

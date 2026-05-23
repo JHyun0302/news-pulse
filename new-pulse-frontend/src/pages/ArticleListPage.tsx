@@ -1,18 +1,32 @@
-import { ArrowLeft, RefreshCw } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
+import { useEffect } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArticleListItem } from "../components/ArticleListItem";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { LoadingBlock } from "../components/LoadingBlock";
 import { useArticlesQuery } from "../hooks/useArticles";
 import { useClientId } from "../hooks/useClientId";
-import { getCategoryLabel, isCategoryCode } from "../utils/category";
+import type { CategoryCode } from "../types/api";
+import {
+  getCategoryCodeFromSlug,
+  getCategoryLabel,
+  getCategorySlug,
+  isCanonicalCategorySlug
+} from "../utils/category";
 
 export function ArticleListPage() {
-  const { categoryCode } = useParams();
-  const clientId = useClientId();
+  const { categorySlug } = useParams();
+  const navigate = useNavigate();
+  const categoryCode = getCategoryCodeFromSlug(categorySlug);
 
-  if (!isCategoryCode(categoryCode)) {
+  useEffect(() => {
+    if (categoryCode && !isCanonicalCategorySlug(categorySlug, categoryCode)) {
+      navigate(`/categories/${getCategorySlug(categoryCode)}`, { replace: true });
+    }
+  }, [categoryCode, categorySlug, navigate]);
+
+  if (!categoryCode) {
     return (
       <ErrorState
         title="알 수 없는 카테고리"
@@ -21,8 +35,22 @@ export function ArticleListPage() {
     );
   }
 
+  return <ArticleListContent categoryCode={categoryCode} />;
+}
+
+interface ArticleListContentProps {
+  categoryCode: CategoryCode;
+}
+
+function ArticleListContent({ categoryCode }: ArticleListContentProps) {
+  const clientId = useClientId();
   const articlesQuery = useArticlesQuery(categoryCode, clientId);
-  const categoryName = articlesQuery.data?.category.name ?? getCategoryLabel(categoryCode);
+  const pages = articlesQuery.data?.pages ?? [];
+  const articles = pages.flatMap((page) => page.items);
+  const firstPage = pages[0];
+  const totalCount = firstPage?.page.totalCount ?? articles.length;
+  const displayedCount = articles.length;
+  const categoryName = firstPage?.category.name ?? getCategoryLabel(categoryCode);
 
   return (
     <section className="space-y-4">
@@ -39,35 +67,45 @@ export function ArticleListPage() {
             {categoryName} 최신뉴스
           </h1>
           {articlesQuery.isSuccess ? (
-            <p className="mt-1 text-sm text-[#6b7280]">총 {articlesQuery.data.items.length}건</p>
+            <p className="mt-1 text-sm text-[#6b7280]">
+              전체 {totalCount}건 중 {displayedCount}건 표시
+            </p>
           ) : null}
         </div>
-        <button
-          type="button"
-          onClick={() => void articlesQuery.refetch()}
-          className="inline-flex h-9 items-center justify-center gap-2 border border-[#c7cdd6] bg-white px-3 text-sm font-semibold text-[#374151] hover:border-[#b42318] hover:text-[#b42318] sm:self-auto"
-        >
-          <RefreshCw aria-hidden="true" size={16} />
-          새로고침
-        </button>
       </div>
 
-      {articlesQuery.isLoading ? <LoadingBlock label="기사 목록을 불러오는 중" /> : null}
+      {articlesQuery.isPending ? <LoadingBlock label="기사 목록을 불러오는 중" /> : null}
 
       {articlesQuery.isError ? (
         <ErrorState message={articlesQuery.error.message} onRetry={() => void articlesQuery.refetch()} />
       ) : null}
 
-      {articlesQuery.isSuccess && articlesQuery.data.items.length === 0 ? (
+      {articlesQuery.isSuccess && articles.length === 0 ? (
         <EmptyState title="표시할 기사가 없습니다" description="RSS 수집 후 다시 확인해 주세요." />
       ) : null}
 
-      {articlesQuery.isSuccess && articlesQuery.data.items.length > 0 ? (
-        <ul className="divide-y divide-[#e5e7eb] border-y border-[#d8dee8] bg-white">
-          {articlesQuery.data.items.map((article) => (
-            <ArticleListItem key={article.articleId} article={article} categoryCode={categoryCode} />
-          ))}
-        </ul>
+      {articlesQuery.isSuccess && articles.length > 0 ? (
+        <>
+          <ul className="divide-y divide-[#e5e7eb] border-y border-[#d8dee8] bg-white">
+            {articles.map((article) => (
+              <ArticleListItem key={article.articleId} article={article} categoryCode={categoryCode} />
+            ))}
+          </ul>
+          <div className="flex justify-center border-b border-[#d8dee8] py-4">
+            {articlesQuery.hasNextPage ? (
+              <button
+                type="button"
+                onClick={() => void articlesQuery.fetchNextPage()}
+                disabled={articlesQuery.isFetchingNextPage}
+                className="inline-flex min-h-10 w-full items-center justify-center border border-[#c7cdd6] bg-white px-4 text-sm font-semibold text-[#374151] hover:border-[#b42318] hover:text-[#b42318] disabled:cursor-wait disabled:text-[#9ca3af] sm:w-auto"
+              >
+                {articlesQuery.isFetchingNextPage ? "불러오는 중" : "더보기"}
+              </button>
+            ) : (
+              <p className="text-sm font-medium text-[#6b7280]">전체 {totalCount}건 표시 완료</p>
+            )}
+          </div>
+        </>
       ) : null}
     </section>
   );

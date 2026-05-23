@@ -8,6 +8,7 @@
 - Response content type: `application/json`
 - Time format: ISO-8601 string, timezone은 서버 기준 `Asia/Seoul`
 - Category code는 영문 enum을 사용하고 화면 표시명은 응답에 함께 제공한다.
+- 화면 route는 `/categories/industry`, `/categories/north-korea` 같은 lowercase slug를 사용하지만, API query와 response는 기존 enum code(`INDUSTRY`, `NORTH_KOREA`)를 유지한다.
 - 로그인은 없다. 읽음 상태는 `clientId` query 또는 body 값으로 식별한다.
 - Error response는 동일한 shape를 사용한다.
 
@@ -26,6 +27,7 @@
 ### `GET /api/categories`
 
 카테고리 목록과 기사/미읽음 수를 반환한다.
+`articleCount`는 해당 카테고리에 저장된 전체 기사 수이고, `unreadCount`는 요청 `clientId`의 읽음 상태를 제외한 수다.
 
 Query:
 
@@ -52,7 +54,9 @@ Response:
 
 ### `GET /api/articles`
 
-카테고리별 기사 목록을 반환한다.
+카테고리별 기사 목록을 최신순으로 반환한다. 정렬 기준은 `publishedAt DESC`, 같은 발행 시각에서는 `articleId DESC`다.
+기본 page size는 50건이며, 프론트엔드 `더보기`는 응답의 `page.nextOffset`으로 다음 page를 요청한다.
+검색/정렬 API는 과제 요구 범위를 넘기므로 제공하지 않는다.
 
 Query:
 
@@ -60,8 +64,8 @@ Query:
 | --- | --- | --- |
 | `category` | 예 | `POLITICS`, `NORTH_KOREA`, `ECONOMY`, `INDUSTRY`, `SOCIETY` |
 | `clientId` | 아니오 | 읽음 여부 계산용 |
-| `limit` | 아니오 | 기본 50, 최대 100 |
-| `cursor` | 아니오 | 이후 확장용. 초기 구현에서는 생략 가능 |
+| `limit` | 아니오 | 기본 50, 최대 100. 0 이하는 `INVALID_REQUEST` |
+| `offset` | 아니오 | 기본 0. 음수는 `INVALID_REQUEST` |
 
 Response:
 
@@ -81,9 +85,26 @@ Response:
       "categories": ["POLITICS"],
       "read": false
     }
-  ]
+  ],
+  "page": {
+    "totalCount": 123,
+    "limit": 50,
+    "offset": 0,
+    "hasNext": true,
+    "nextOffset": 50
+  }
 }
 ```
+
+Page metadata:
+
+| 이름 | 설명 |
+| --- | --- |
+| `totalCount` | 현재 카테고리에 저장된 전체 기사 수 |
+| `limit` | 이번 요청의 page size |
+| `offset` | 이번 요청의 시작 위치 |
+| `hasNext` | 다음 page 존재 여부 |
+| `nextOffset` | 다음 page 요청에 사용할 offset. 다음 page가 없으면 `null` |
 
 ### `GET /api/articles/{articleId}`
 

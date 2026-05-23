@@ -7,7 +7,7 @@ import { StatusBadge } from "../components/StatusBadge";
 import { useArticleDetailQuery, useMarkArticleReadMutation } from "../hooks/useArticles";
 import { useClientId } from "../hooks/useClientId";
 import type { CategoryCode } from "../types/api";
-import { getCategoryLabel } from "../utils/category";
+import { getCategoryLabel, getCategorySlug } from "../utils/category";
 import { formatPublishedAt } from "../utils/date";
 
 interface DetailLocationState {
@@ -43,7 +43,7 @@ export function ArticleDetailPage() {
     <section className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Link
-          to={backCategory ? `/categories/${backCategory}` : "/"}
+          to={backCategory ? `/categories/${getCategorySlug(backCategory)}` : "/"}
           className="inline-flex items-center gap-2 text-sm font-semibold text-[#b42318] hover:text-[#8f1d14]"
         >
           <ArrowLeft aria-hidden="true" size={16} />

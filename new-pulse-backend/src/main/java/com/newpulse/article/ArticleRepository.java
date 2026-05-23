@@ -83,7 +83,7 @@ public class ArticleRepository {
         return Optional.of(toArticle(rows.get(0)));
     }
 
-    public List<Article> findByCategory(NewsCategory category, String clientId, int limit) {
+    public List<Article> findByCategory(NewsCategory category, String clientId, int limit, int offset) {
         List<ArticleRow> rows = jdbcTemplate.query("""
                 SELECT a.article_id, a.title, a.link, a.creator, a.published_at,
                        CASE WHEN ? IS NOT NULL AND EXISTS (
@@ -94,9 +94,18 @@ public class ArticleRepository {
                 JOIN article_categories ac ON ac.article_id = a.article_id
                 WHERE ac.category = ?
                 ORDER BY a.published_at DESC, a.article_id DESC
-                LIMIT ?
-                """, this::mapArticleRow, normalizedClientId(clientId), normalizedClientId(clientId), category.name(), limit);
+                LIMIT ? OFFSET ?
+                """, this::mapArticleRow, normalizedClientId(clientId), normalizedClientId(clientId), category.name(), limit, offset);
         return rows.stream().map(this::toArticle).toList();
+    }
+
+    public int countByCategory(NewsCategory category) {
+        Integer count = jdbcTemplate.queryForObject("""
+                SELECT COUNT(*)
+                FROM article_categories
+                WHERE category = ?
+                """, Integer.class, category.name());
+        return count == null ? 0 : count;
     }
 
     public List<CategorySummary> categorySummaries(String clientId) {

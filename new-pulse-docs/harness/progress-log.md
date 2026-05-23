@@ -656,6 +656,78 @@ Browser QA:
 - frontend 결함 없음
 - 문서 결함 없음
 
+## 2026-05-23 OCI 배포 후 최종 QA
+
+세션:
+
+- infra
+- test-qa
+
+전제:
+
+- OCI edge public URL: `http://138.2.43.7`
+- QA 기준은 로컬 Docker가 아니라 OCI edge public URL
+
+브랜치 확인:
+
+- `git pull origin feature/m1-m8-implementation`: `Already up to date`
+- `git status --short --branch`: `feature/m1-m8-implementation...origin/feature/m1-m8-implementation`
+
+로컬 회귀 테스트:
+
+- Backend `./mvnw test`: 통과, 16 tests
+- Frontend `npm test`: 통과, 18 tests
+- Frontend `npm run build`: 통과
+
+OCI smoke QA:
+
+- `GET http://138.2.43.7/`: `200 OK`
+- `GET http://138.2.43.7/api/health`: `UP`, database `UP`
+- `GET http://138.2.43.7/api/categories?clientId=qa-oci-curl`: 5개 카테고리 응답 확인
+  - `POLITICS`: 131
+  - `NORTH_KOREA`: 82
+  - `ECONOMY`: 120
+  - `INDUSTRY`: 121
+  - `SOCIETY`: 126
+- `GET http://138.2.43.7/api/articles?category=POLITICS&clientId=qa-oci-api&limit=2`: 계약 shape 확인
+- `GET http://138.2.43.7/api/articles/AKR20260523033100053?clientId=qa-oci-api`: 상세 계약 shape 확인
+
+Admin/API 확인:
+
+- public edge에서 `/api/admin/**`는 nginx `404` 반환
+- `deploy/edge/nginx.conf`의 `location ^~ /api/admin/ { return 404; }` 정책과 일치
+- 따라서 public edge 기준으로 RSS collect, push dispatch, push histories shape는 실행/확인하지 않음
+- 공개 edge에서 admin API까지 제출 검증 대상이면 infra 정책 변경이 필요하다. 현재 설계 기준으로는 보안 차단 정상 동작으로 판단한다.
+
+Browser QA:
+
+- Chrome 직접 QA 통과
+- 확인 흐름: 상단 카테고리 nav -> 5개 카테고리 현황 -> 정치 최신뉴스 목록 -> 상세 -> `연합뉴스 원문 보기` 새 탭 -> 목록 복귀 읽음 반영
+- 검증 article id: `AKR20260523033100053`
+- Chrome console error: 0건
+- Desktop overflow: 0
+
+Mobile QA:
+
+- Playwright `channel: chrome`, viewport `390x844`
+- 확인 화면: category overview, politics list, article detail
+- `documentElement.scrollWidth`와 `body.scrollWidth` 모두 viewport width 이하
+- 모바일 overflow: 0
+- console error: 0건
+
+README/산출물 확인:
+
+- README의 DB/CSV 산출물은 로컬 제출 검증용 SQLite/CSV 경로로 설명되어 있으며, OCI runtime DB count와 동일해야 한다고 설명하지 않음
+- 기능 설명과 실제 OCI 동작 사이 불일치 없음
+- OCI 화면은 현재 README 스크린샷과 동일한 UI 구조라 README용 스크린샷은 갱신하지 않음
+
+결함 판단:
+
+- 사용자 화면 기능 결함 없음
+- backend API 공개 기능 결함 없음
+- Chrome/mobile UI 결함 없음
+- public edge admin API는 보안 정책상 차단되어 push histories shape는 public edge에서 미검증
+
 ## 2026-05-23 원문 링크와 푸시 설계 설명 보강
 
 세션:
@@ -681,3 +753,348 @@ git diff --check
 - README 이미지 링크와 실제 파일 존재 확인 통과
 - `rg` 기준 제출 일정, 안내 원문, 개인정보성 상세 문구 노출 없음
 - 변경 파일은 README와 설계/진행 로그 문서로 한정
+
+## 2026-05-23 제출 전 평가항목 충족 여부 정리
+
+세션:
+
+- docs
+
+완료 작업:
+
+- 루트 `README.md`의 로컬 실행, Docker 실행, SQLite DB 경로, CSV 산출물 경로, 스크린샷, AI 활용 고지 유지 확인
+- README에 OCI edge URL 고정 노출 여부를 제출 직전 PM 최종 판단 항목으로 명시
+- `new-pulse-docs/harness/acceptance-matrix.md`에 평가항목별 충족 여부, 증거 파일, 검증 명령/기록 표 추가
+- 공개 저장소 수위 점검에서 작업용 원문 표현을 더 추상화
+
+최종 충족 요약:
+
+- 과제 1 기능 구현: 카테고리 선택, 기사 리스트, 본문 링크, 읽음 상태 표시 충족
+- UI/UX 품질: 뉴스 포털형 UI, desktop/mobile QA, 최신 스크린샷 기준 충족
+- 코드 품질: 기능형 backend 패키지, frontend component/query/API 분리, 테스트 기준 충족
+- 과제 2 구현: RSS 수집, 사용자 필터링, DND 제외, APNS/FCM 분기, push history 저장 충족
+- README: 구조, 실행 방법, 기술 스택, 데이터 모델, DB 확인 방법 충족
+- 배포: 로컬 Docker와 OCI edge/front/back QA 완료. README URL 고정 노출은 PM 최종 판단 항목
+
+검증 결과:
+
+- `git diff --check`: 통과
+- README 링크/이미지 경로 확인 통과
+- 공개 수위 `rg` 점검에서 제출 일정, 제출 안내 원문, 개인정보성 상세 문구 노출 없음
+- `git ls-files` 기준 원본 첨부 파일, `.env`, runtime DB, 로그 파일 추적 없음
+
+## 2026-05-23 OCI 배포 URL과 favicon 최종 반영
+
+세션:
+
+- docs
+
+완료 작업:
+
+- 루트 `README.md`에 배포 확인 URL `http://138.2.43.7` 추가
+- README에 현재 배포가 HTTP public IP 기준이며 TLS/도메인은 미구성임을 명시
+- `new-pulse-docs/05-deployment-oci.md`에 M8 실제 배포 결과, edge/front/back 역할, public edge admin API 차단 정책, SQLite 운영 경로, TLS/도메인 미구성 리스크 기록
+- public/private IP 공개 범위는 PM 최종 판단 항목으로 남기고, 문서에는 edge public URL만 기록
+- favicon 배포 확인 결과 기록
+
+검증 결과:
+
+```bash
+curl -fsSI http://138.2.43.7/
+# 200 OK
+
+curl -fsSI http://138.2.43.7/favicon.svg
+# 200 OK, Content-Type: image/svg+xml
+
+curl -fsS http://138.2.43.7/api/health
+# status UP, database UP
+
+curl -s -o /tmp/news-pulse-admin-status.txt -w '%{http_code}\n' 'http://138.2.43.7/api/admin/push-histories?limit=1'
+# 404
+```
+
+- README 스크린샷 링크와 DB count는 최신 제출 산출물 기준과 일치
+- 공개 수위 점검에서 원본 과제 문서, 원본 사용자 데이터, 제출 안내 원문, 개인정보성 상세 문구 노출 없음
+
+## 2026-05-23 기사 목록 페이징 QA
+
+세션:
+
+- backend
+- frontend
+- test-qa
+
+전제:
+
+- 최신 `feature/m1-m8-implementation` 기준 검증
+- QA 기준 URL은 로컬 Docker compose `http://localhost:3000`
+
+브랜치 확인:
+
+- `git pull origin feature/m1-m8-implementation`: `Already up to date`
+- `git status --short --branch`: `feature/m1-m8-implementation...origin/feature/m1-m8-implementation`
+
+자동 테스트:
+
+- Backend `./mvnw test`: 통과, 20 tests
+- Backend `./mvnw -q -DskipTests package`: 통과
+- Frontend `npm test`: 통과, 20 tests
+- Frontend `npm run build`: 통과
+- Frontend `npx playwright test`: 통과, 2 tests
+
+Docker local QA:
+
+```bash
+docker compose -f docker-compose.local.yml -p news-pulse up -d --build
+# 성공
+```
+
+- `news-pulse-backend-local`: `healthy`
+- `news-pulse-frontend-local`: `healthy`
+- `http://localhost:3000/healthz`: `ok`
+- `http://localhost:3000/api/health`: `UP`
+- `http://localhost:8080/api/health`: `UP`
+
+페이징 검증:
+
+- 카테고리 현황에서 `POLITICS` 123건 확인
+- `GET /api/articles?category=POLITICS&limit=50`: `items=50`, `page.totalCount=123`, `page.hasNext=true`, `page.nextOffset=50`
+- UI에서 `전체 123건 중 50건 표시` 확인
+- `더보기` 클릭 후 `전체 123건 중 100건 표시` 확인
+- 더보기 후 article row 수: 100
+- 중복 article id: 0
+- 더보기 후 기존 첫 50건 순서 유지 확인
+- 상세 진입 후 읽음 처리, 목록 복귀 후 동일 article row `읽음` 반영 확인
+- 검증 article id: `AKR20260522149800063`
+
+Mobile QA:
+
+- Chrome channel Playwright viewport `390x844`
+- category overview, article list after more, article detail 모두 overflow 0
+- console error: 0건
+
+스크린샷:
+
+- 갱신:
+  - `screenshots/article-list-read-state.png`
+  - `screenshots/mobile-article-list.png`
+  - `screenshots/mobile-article-detail.png`
+- 추가:
+  - `screenshots/pagination-after-more-read-state.png`
+
+결함 판단:
+
+- backend 결함 없음
+- frontend 결함 없음
+- Docker/proxy 결함 없음
+- 모바일 레이아웃 결함 없음
+
+## 2026-05-23 기사 목록 페이징 문서 반영
+
+세션:
+
+- docs
+
+반영:
+
+- README 핵심 기능, 주요 API, 주요 설계 판단에 기사 목록 50건 단위 더보기 페이징을 반영
+- README 스크린샷 섹션에 `screenshots/pagination-after-more-read-state.png` 추가
+- API Contract `/api/articles`에 `limit`, `offset`, `page.totalCount`, `page.hasNext`, `page.nextOffset` 의미를 명확히 기록
+- Frontend Design에 카테고리 현황의 전체 기사 수와 목록 표시 건수의 차이, 더보기형 페이징 설계 이유 기록
+- Architecture 설계 결정 이유에 검색/정렬을 제외하고 최신순+더보기 흐름에 집중한 판단 기록
+
+검증:
+
+- `git diff --check`: 통과
+- README 이미지/문서 링크 확인: 24개 local target 존재 확인
+- 공개 수위 `rg` 점검: 원본 과제 문서/제출 안내 원문/개인정보성 문구 노출 없음
+
+## 2026-05-23 카테고리 slug 라우팅 QA
+
+세션:
+
+- frontend
+- test-qa
+
+전제:
+
+- frontend 커밋 `7c659d3 fix: 카테고리 URL slug 정리` 이후 최신 `feature/m1-m8-implementation` 기준 검증
+- QA 기준 URL은 로컬 Docker compose `http://localhost:3000`
+- Backend/API contract 변경 없음
+
+브랜치 확인:
+
+- `git pull origin feature/m1-m8-implementation`: `Already up to date`
+- `git status --short --branch`: `feature/m1-m8-implementation...origin/feature/m1-m8-implementation`
+
+자동 테스트:
+
+- Backend `./mvnw test`: 통과, 20 tests
+- Frontend `npm test`: 통과, 24 tests
+- Frontend `npm run build`: 통과
+- Frontend `npx playwright test`: 통과, 3 tests
+
+Docker local QA:
+
+```bash
+docker compose -f docker-compose.local.yml -p news-pulse up -d --build
+# 성공
+```
+
+- `news-pulse-backend-local`: `healthy`
+- `news-pulse-frontend-local`: `healthy`
+- `http://localhost:3000/healthz`: `ok`
+- `http://localhost:3000/api/health`: `UP`
+- `http://localhost:8080/api/health`: `UP`
+
+Slug 라우팅 검증:
+
+- `/categories/politics`, `/categories/north-korea`, `/categories/economy`, `/categories/industry`, `/categories/society` 직접 접근 정상
+- `/categories/POLITICS` 접근 시 `/categories/politics`로 정규화 확인
+- 상단 nav와 카테고리 현황 링크가 lowercase slug를 사용함을 확인
+- 상세 화면 `목록으로` 클릭 시 `/categories/politics`로 복귀 확인
+
+기능 회귀 검증:
+
+- 정치 목록 초기 표시: `전체 123건 중 50건 표시`
+- `더보기` 클릭 후 `전체 123건 중 100건 표시`
+- 더보기 후 article row 수: 100
+- 중복 article id: 0
+- 상세 진입 후 읽음 처리, 목록 복귀 후 동일 article row `읽음` 반영 확인
+- `연합뉴스 원문 보기`: 새 탭, `target="_blank"`, `https://www.yna.co.kr/view/...` 확인
+- Chrome channel console error: desktop 0건, mobile 0건
+- Mobile viewport `390x844`: horizontal overflow 0px
+
+스크린샷:
+
+- Playwright 재실행으로 최신 UI 기준 갱신:
+  - `screenshots/article-list-read-state.png`
+  - `screenshots/mobile-article-list.png`
+
+결함 판단:
+
+- backend 결함 없음
+- frontend slug 라우팅 결함 없음
+- Docker/proxy 결함 없음
+- 모바일 레이아웃 결함 없음
+
+## 2026-05-23 카테고리 slug URL 문서 반영
+
+세션:
+
+- docs
+
+검색 결과:
+
+- `rg '/categories/[A-Z]'` 결과, progress-log의 legacy 대문자 URL 호환 QA 기록만 존재
+- README, Frontend Design, API Contract의 canonical 화면 URL 설명은 lowercase/kebab-case slug 기준
+- Frontend Design에 `새로고침 버튼` 문구가 남아 있어 최신 UI 기준으로 제거
+
+반영:
+
+- README에 화면 URL은 `/categories/industry`, `/categories/north-korea` 같은 lowercase/kebab-case slug를 사용한다고 기록
+- API 요청은 기존 enum code를 유지하므로 화면 URL `/categories/industry`에서도 `category=INDUSTRY`를 호출한다고 기록
+- 기존 대문자 enum URL은 호환하되 canonical lowercase slug로 정리된다고 기록
+- API Contract와 Frontend Design에 화면 slug와 API enum code의 경계를 명확히 기록
+- Acceptance Matrix의 카테고리 리스트 검증 항목에 slug URL 흐름 반영
+
+검증:
+
+- `git diff --check`: 통과
+- README 이미지/문서 링크 확인: 24개 local target 존재 확인
+- 공개 수위 `rg` 점검: 원본 과제 문서/제출 안내 원문/개인정보성 문구 노출 없음
+- README와 Frontend Design에서 `새로고침`/`refresh` 문구 없음
+- `/categories/[A-Z]` 검색: progress-log legacy redirect QA 기록 1건만 존재
+
+## 2026-05-23 OCI slug 라우팅 smoke QA
+
+세션:
+
+- infra
+- frontend
+- test-qa
+
+대상:
+
+- `http://138.2.43.7`
+
+기본 응답:
+
+- `GET /`: `200`, `text/html; charset=utf-8`
+- `GET /api/health`: `status=UP`, `database=UP`
+- `GET /favicon.svg`: `200`, `image/svg+xml`
+
+Slug 라우팅:
+
+- `/categories/industry` 직접 접근 정상
+- `/categories/INDUSTRY` 접근 시 `/categories/industry`로 정규화 확인
+- 상단 nav의 산업 링크가 `/categories/industry` lowercase slug로 이동함을 확인
+
+기능 smoke:
+
+- 상세 진입 후 읽음 처리 정상
+- 상세 화면 `연합뉴스 원문 보기`: 새 탭, `target="_blank"`, `https://www.yna.co.kr/view/...` 확인
+- `목록으로` 클릭 시 `/categories/industry` 목록 복귀 및 동일 article row `읽음` 반영 확인
+- Chrome channel console error: desktop 0건, mobile 0건
+- Mobile viewport `390x844`: horizontal overflow 0px
+
+결함:
+
+- 더보기 페이징은 OCI에서 실패
+- `/api/categories?clientId=...` 기준 `INDUSTRY.articleCount=129`이나 `/categories/industry` UI는 `전체 50건 중 50건 표시`로 렌더링되고 `더보기` 버튼이 없음
+- `/api/articles?category=INDUSTRY&clientId=...&limit=50&offset=0` 응답에도 `page` 메타가 없어 로컬 최신 API contract와 OCI 배포 상태가 불일치
+- 분류: OCI 배포 버전 불일치 또는 backend/frontend paging 반영 누락
+
+## 2026-05-23 OCI backend 페이징 재배포 QA
+
+세션:
+
+- infra
+- backend
+- test-qa
+
+대상:
+
+- `http://138.2.43.7`
+
+API 검증:
+
+- `GET /api/health`: `status=UP`, `database=UP`
+- `GET /api/categories?clientId=qa-oci-paging`: 50건 초과 카테고리 확인
+  - `POLITICS=172`
+  - `INDUSTRY=129`
+  - `SOCIETY=155`
+- `GET /api/articles?category=INDUSTRY&clientId=qa-oci-paging&limit=50&offset=0`
+  - `items=50`
+  - `page.totalCount=129`
+  - `page.limit=50`
+  - `page.offset=0`
+  - `page.hasNext=true`
+  - `page.nextOffset=50`
+- `GET /api/articles?category=INDUSTRY&clientId=qa-oci-paging&limit=50&offset=50`
+  - `items=50`
+  - `page.totalCount=129`
+  - `page.limit=50`
+  - `page.offset=50`
+  - `page.hasNext=true`
+  - `page.nextOffset=100`
+
+브라우저 QA:
+
+- `/categories/industry` 직접 접근 정상
+- 초기 목록: `전체 129건 중 50건 표시`
+- `더보기` 버튼 표시 정상
+- `더보기` 클릭 후 `전체 129건 중 100건 표시`
+- 더보기 후 article row 수: 100
+- 중복 article id: 0
+- 상세 진입 후 읽음 처리 정상
+- `목록으로` 클릭 시 `/categories/industry` 목록 복귀 및 동일 article row `읽음` 반영 확인
+- `연합뉴스 원문 보기`: 새 탭, `target="_blank"`, `https://www.yna.co.kr/view/...` 확인
+- `/categories/INDUSTRY` 접근 시 `/categories/industry`로 정규화 확인
+- Chrome channel console error: desktop 0건, mobile 0건
+- Mobile viewport `390x844`: horizontal overflow 0px, 더보기 후 100건 표시 확인
+
+결함 해결 판단:
+
+- 이전 OCI 더보기 페이징 결함 해결 확인
+- API page 메타와 UI 더보기 동작이 로컬 최신 contract와 일치

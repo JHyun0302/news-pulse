@@ -1,6 +1,6 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { CATEGORY_CODES } from "../types/api";
-import { getCategoryLabel } from "../utils/category";
+import { getCategoryLabel, getCategorySlug } from "../utils/category";
 
 export function AppShell() {
   return (
@@ -19,7 +19,7 @@ export function AppShell() {
               {CATEGORY_CODES.map((categoryCode) => (
                 <NavLink
                   key={categoryCode}
-                  to={`/categories/${categoryCode}`}
+                  to={`/categories/${getCategorySlug(categoryCode)}`}
                   className={({ isActive }) =>
                     `inline-flex h-8 items-center border-b-2 px-3 text-sm font-semibold ${
                       isActive

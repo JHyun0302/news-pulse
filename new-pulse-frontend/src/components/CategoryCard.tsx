@@ -1,6 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { CategorySummary } from "../types/api";
+import { getCategorySlug } from "../utils/category";
 
 interface CategoryCardProps {
   category: CategorySummary;
@@ -9,7 +10,7 @@ interface CategoryCardProps {
 export function CategoryCard({ category }: CategoryCardProps) {
   return (
     <Link
-      to={`/categories/${category.code}`}
+      to={`/categories/${getCategorySlug(category.code)}`}
       className="group grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-[#e5e7eb] px-3 py-3 transition hover:bg-[#f8fafc] last:border-b-0 sm:min-h-24 sm:border-b-0 sm:border-r sm:px-4 sm:last:border-r-0"
       aria-label={`${category.name} 기사 목록 보기`}
     >

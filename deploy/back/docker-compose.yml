@@ -10,6 +10,7 @@ services:
       JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--XX:MaxRAMPercentage=75}
     ports:
       - "${BACKEND_BIND_ADDRESS:?set BACKEND_BIND_ADDRESS to the back-vm private IP}:${BACKEND_HOST_PORT:-8080}:8080"
+      - "${BACKEND_LOOPBACK_BIND_ADDRESS:-127.0.0.1}:${BACKEND_HOST_PORT:-8080}:8080"
     volumes:
       - ${NEWS_PULSE_DATA_DIR:-/opt/news-pulse/data}:/app/data
     tmpfs:

@@ -16,13 +16,22 @@
 
 ## 화면 흐름
 
+화면 흐름은 사용자가 브라우저에서 뉴스를 확인하는 순서다. 과제 요구사항의 `카테고리 선택 -> 기사 리스트 -> 본문 확인 -> 읽음 상태 반영`을 프론트엔드 route로 나누어 구현했다.
+
 ```mermaid
 flowchart TD
-  Categories["/ - category overview"] --> List["/categories/:categorySlug - article list"]
-  List --> Detail["/articles/:articleId - article detail"]
-  Detail --> External["open original article in new tab"]
-  Detail --> List
+  A["1. 카테고리 현황<br/>/"] --> B["2. 기사 목록<br/>/categories/:slug"]
+  B --> C["3. 기사 상세<br/>/articles/:articleId"]
+  C --> D["4. 원문 새 탭<br/>연합뉴스 link"]
+  C --> B
 ```
+
+| 단계 | 화면 | 사용자 행동 | 주요 API |
+| --- | --- | --- | --- |
+| 1 | 카테고리 현황 | 정치, 북한, 경제, 산업, 사회 중 하나를 선택한다. | `GET /api/categories` |
+| 2 | 기사 목록 | 최신 기사 50건을 확인하고 필요하면 `더보기`로 다음 50건을 불러온다. | `GET /api/articles?category=...&limit=50&offset=...` |
+| 3 | 기사 상세 | 선택한 기사 메타데이터를 확인한다. 상세 진입 시 읽음 상태가 저장된다. | `GET /api/articles/{articleId}`, `PUT /api/articles/{articleId}/read-state` |
+| 4 | 원문 새 탭 | `연합뉴스 원문 보기` 버튼으로 원 출처의 본문을 연다. | 외부 URL |
 
 화면 route의 카테고리 식별자는 lowercase slug를 사용한다. 예를 들어 산업은 `/categories/industry`, 북한은 `/categories/north-korea`로 접근한다. API 계약은 기존 enum code를 유지하므로 화면 URL이 `/categories/industry`여도 기사 목록 API는 `category=INDUSTRY`로 호출한다. 기존 enum code 기반 대문자 URL도 호환하되, 화면에서는 canonical lowercase slug로 replace navigation한다.
 

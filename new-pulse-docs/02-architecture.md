@@ -15,26 +15,57 @@ news-pulse/
 
 ## 시스템 구성
 
+이 그림은 평가자가 로컬 Docker 또는 OCI 배포 환경에서 앱을 열었을 때 어떤 구성요소가 연결되는지를 보여준다. 긴 설명은 다이어그램 밖의 항목으로 분리하고, 그림 안에는 역할만 표시한다.
+
 ```mermaid
 flowchart TD
-  Browser["사용자 브라우저"] --> React["React 뉴스 화면"]
-  React -->|"카테고리, 기사 목록, 상세, 읽음 처리"| API["Spring Boot REST API"]
-  API -->|"조회/저장"| DB[("SQLite DB")]
-  DB -->|"기사, 카테고리, 읽음 상태"| API
+  U["Browser"] --> F["React Frontend"]
+  F --> A["Spring Boot API"]
+  A --> D[("SQLite")]
 
-  RSS["연합뉴스 RSS 5개 카테고리"] --> Collector["RSS 수집기"]
-  Collector -->|"article_id 중복 제거, 최대 1,000건 유지"| DB
+  R["YNA RSS"] --> C["RSS Collector"]
+  C --> A
 
-  Seed["사용자 seed 100명"] --> Importer["사용자 적재"]
-  Importer -->|"users, user_preferences 저장"| DB
+  S["users.csv"] --> I["Seed Importer"]
+  I --> A
 
-  DB -->|"신규 기사 + 사용자 선호 카테고리"| Selector["푸시 대상 선별"]
-  Selector -->|"DND 시간대 제외"| Push["APNS/FCM 시뮬레이션"]
-  Push -->|"success/fail 반환"| History["발송 이력 저장"]
-  History -->|"push_histories 저장"| DB
+  A --> P["Push Dispatcher"]
+  P --> N["APNS / FCM Simulator"]
+  P --> H["History Writer"]
+  H --> D
 ```
 
-이 그림은 배포 구조가 아니라 애플리케이션 데이터 흐름을 설명한다. OCI의 `edge-vm -> front-vm -> back-vm` 배포 구조와 네트워크 정책은 [OCI 인프라 아키텍처](05-deployment-oci.md)를 기준으로 확인한다.
+구성요소의 책임은 다음과 같다.
+
+| 구성요소 | 책임 |
+| --- | --- |
+| Browser | 카테고리, 기사 목록, 상세 화면을 사용한다. 읽음 상태는 브라우저 `client_id` 기준으로 저장된다. |
+| React Frontend | 화면 route, 기사 목록 `더보기`, 읽음/미읽음 표시, 원문 새 탭 열기를 담당한다. |
+| Spring Boot API | 화면 API, RSS 수집, 사용자 seed 적재, 푸시 시뮬레이션 흐름을 제공한다. |
+| SQLite | 기사, 카테고리 매핑, 읽음 상태, 사용자 seed, 푸시 발송 이력을 저장한다. |
+| RSS Collector | 연합뉴스 RSS 5개 카테고리를 수집하고 중복 기사와 최대 1,000건 제한을 처리한다. |
+| Seed Importer | `users.csv` 100명과 선호 카테고리를 `users`, `user_preferences`에 적재한다. |
+| Push Dispatcher | 기사 카테고리와 사용자 선호 카테고리를 매칭하고 DND 시간대 사용자를 제외한다. |
+| APNS / FCM Simulator | 실제 외부 발송 없이 `success` 또는 `fail`을 반환한다. |
+| History Writer | 발송 결과를 `push_histories`에 저장한다. |
+
+위 그림은 배포 구조가 아니라 애플리케이션 구성과 데이터 흐름을 설명한다. OCI의 `edge-vm -> front-vm -> back-vm` 배포 구조와 네트워크 정책은 [OCI 인프라 아키텍처](05-deployment-oci.md)를 기준으로 확인한다.
+
+## 주요 데이터 흐름
+
+```mermaid
+flowchart LR
+  R1["RSS 수집"] --> R2["기사 저장"]
+  R2 --> R3["카테고리 매핑"]
+  R3 --> R4["화면 조회"]
+
+  U1["사용자 seed"] --> U2["선호 카테고리 저장"]
+  U2 --> P1["푸시 대상 선별"]
+  R2 --> P1
+  P1 --> P2["DND 제외"]
+  P2 --> P3["APNS/FCM 호출"]
+  P3 --> P4["발송 이력 저장"]
+```
 
 ## 설계 결정 이유
 

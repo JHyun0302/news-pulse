@@ -19,6 +19,9 @@
 # Local-only analysis derived from the confidential assignment material.
 new-pulse-docs/private/
 
+# Local presentation drafts are edited outside the public submission history.
+*.pptx
+
 # Build outputs
 node_modules/
 dist/

@@ -23,7 +23,7 @@
 
 ## 아키텍처
 
-![News Pulse OCI Architecture](new-pulse-docs/assets/oci-architecture.svg)
+![News Pulse OCI Architecture](new-pulse-docs/assets/oci-architecture.png)
 
 ```text
 Browser -> front-vm Nginx -> /api proxy -> back-vm Spring Boot -> SQLite
